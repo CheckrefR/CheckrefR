@@ -1,0 +1,395 @@
+# CheckrefR
+
+> ⚠️ **Project status**: `CheckrefR` is an **experimental** release
+> (`0.0.0.1`), under active development and not yet submitted to CRAN.
+> The code is covered by automated tests, but this coverage remains
+> partial (see the Codecov badge above). The **computation of matching
+> scores** is currently being revised and has not yet been evaluated
+> through formal tests. See the [Limitations and
+> caution](#limitations-and-caution) section.
+
+## Description
+
+**CheckrefR** is an R package with two complementary goals.
+
+**1. An R client for [GROBID](https://github.com/kermitt2/grobid)**
+(*GeneRation Of BIbliographic Data*), a tool that reads scientific
+documents (PDF) and automatically extracts their metadata, full text,
+and bibliographic references. CheckrefR lets you use it:
+
+- **locally**, via Docker: the package downloads, starts, and stops the
+  GROBID container for you;
+- **remotely**, by connecting to an existing GROBID server.
+
+> The remote servers configured by default are **demo** servers: they
+> are shared, sometimes overloaded, and are not suitable for intensive
+> or sensitive use. It is preferable to use GROBID **locally** or to
+> have **your own server**, which the package lets you configure.
+
+**2. A tool for verifying bibliographic references.**
+[`validate_references()`](https://CheckrefR.github.io/CheckrefR/reference/validate_references.md)
+checks references (extracted by GROBID, or read from text in APA 7
+format) against the **OpenAlex** and **doi.org** databases: DOI
+existence, consistency between the DOI and the reference, title search,
+and computation of configurable similarity scores (title, authors,
+year).
+
+This second component is designed in the context of **generative
+artificial intelligence**: language models can produce references of
+highly variable quality, ranging from pure hallucination to exact
+references, including approximate references, fabricated DOIs attached
+to real references (or the reverse), and partially accurate cases.
+CheckrefR helps spot these situations, **without replacing human
+verification**.
+
+## Installation
+
+`CheckrefR` is not yet available on CRAN. Install the development
+version from GitHub:
+
+``` r
+
+# install.packages("devtools")
+devtools::install_github("CheckrefR/CheckrefR")
+```
+
+### Requirements
+
+- [Docker](https://docs.docker.com/get-docker/) (recommended, to run
+  GROBID locally), **or**
+- an Internet connection and access to a remote GROBID server.
+
+Reference validation
+([`validate_references()`](https://CheckrefR.github.io/CheckrefR/reference/validate_references.md))
+requires an Internet connection (OpenAlex, doi.org), but **not** a
+GROBID server. An OpenAlex API key and a contact e-mail address are
+recommended (see the
+[documentation](https://checkrefr.github.io/CheckrefR/)).
+
+The package ships with example files (PDF and TXT) in `inst/extdata`,
+which can be used directly after installation (see [Quick
+start](#quick-start)).
+
+## Quick start
+
+``` r
+
+library(CheckrefR)
+
+# 1. Check the environment (Docker, remote servers, etc.)
+grobid_check_requirements()
+
+# 2. Get a step-by-step installation guide if needed
+grobid_install_guide()
+
+# 3. (Optional) Start GROBID locally via Docker.
+#    This step is optional: grobid_process_file() automatically starts or
+#    joins a server if necessary (arguments `mode` and `model_type`).
+grobid_docker_start()
+
+# 4. Get an example PDF provided with the package
+pdf_example <- system.file("extdata", "fpubh-10-1057020.pdf", package = "CheckrefR")
+
+# 5. Extract the full text and metadata
+fulltext <- grobid_process_file(
+  file    = pdf_example,
+  service = "processFulltextDocument"
+)
+
+# 6. Extract the bibliographic references
+refs <- grobid_process_file(
+  file    = pdf_example,
+  service = "processReferences"
+)
+
+# 7. The container is no longer needed for what follows:
+#    validate_references() does not call GROBID.
+grobid_docker_stop()
+
+# 8. Validate the references against OpenAlex / doi.org
+validated <- validate_references(refs)
+
+# 9. Keep the best candidate for each reference
+best <- deduplicate_references(validated)
+```
+
+> The **first use** of local mode downloads the GROBID Docker image,
+> which may take some time. This happens again for each new model
+> (`"crf"` or `"full"`) not yet downloaded.
+
+You can also directly process a free-text reference file provided as an
+example, with or without GROBID:
+
+``` r
+
+citation_example <- system.file("extdata", "ref_test.txt", package = "CheckrefR")
+
+# With GROBID (tolerant of varied formats)
+parsed_citations <- process_citation_file(file = citation_example)
+
+# Without GROBID, for references in APA 7 format (regular expressions)
+apa_refs <- parse_apa_text(citation_example, as_ref_df = TRUE)
+```
+
+## Main features
+
+### Data extraction
+
+| Function | Description |
+|:---|:---|
+| [`grobid_process_file()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_process_file.md) | Processes a file (PDF or citations) via one of the four GROBID services (full text, header, references, citation list) and returns a raw (XML) or parsed (table) result. |
+| [`grobid_process_files()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_process_files.md) | Processes a batch of files, serially or in parallel, with error handling. |
+| [`process_citation_file()`](https://CheckrefR.github.io/CheckrefR/reference/process_citation_file.md) | Parses a list of free-text references via the `processCitationList` service. |
+| [`parse_apa_text()`](https://CheckrefR.github.io/CheckrefR/reference/parse_apa_text.md) | Extracts title, authors, year, and DOI from **APA 7** references, without GROBID (regular expressions). |
+| [`parse_fulltext()`](https://CheckrefR.github.io/CheckrefR/reference/parse_fulltext.md), [`parse_header()`](https://CheckrefR.github.io/CheckrefR/reference/parse_header.md), [`parse_references()`](https://CheckrefR.github.io/CheckrefR/reference/parse_references.md), [`parse_citation_list()`](https://CheckrefR.github.io/CheckrefR/reference/parse_citation_list.md) | Convert a GROBID XML into a data table, depending on the service used. |
+
+### Reference validation
+
+| Function | Description |
+|:---|:---|
+| [`validate_references()`](https://CheckrefR.github.io/CheckrefR/reference/validate_references.md) | Validates references using a dual DOI + title strategy, querying OpenAlex and doi.org, with configurable similarity scores. **Does not require** a GROBID server. |
+| [`deduplicate_references()`](https://CheckrefR.github.io/CheckrefR/reference/deduplicate_references.md) | Keeps, for each reference, the best candidate returned by the validation. |
+| [`check_doi_exists()`](https://CheckrefR.github.io/CheckrefR/reference/check_doi_exists.md) | Checks the existence and validity of one or more DOIs with doi.org. |
+| [`compute_author_score()`](https://CheckrefR.github.io/CheckrefR/reference/compute_author_score.md), [`sim_author_pair()`](https://CheckrefR.github.io/CheckrefR/reference/sim_author_pair.md) | Compute the similarity between author lists, or between two authors. |
+| [`oa_matching_info()`](https://CheckrefR.github.io/CheckrefR/reference/oa_matching_info.md) | Documents the matching parameters used with OpenAlex. |
+
+### Server and configuration management
+
+| Function | Description |
+|:---|:---|
+| [`grobid_check_requirements()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_check_requirements.md), [`grobid_install_guide()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_install_guide.md) | Environment diagnostics and interactive installation guide. |
+| [`grobid_docker_start()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_docker_start.md), [`grobid_docker_stop()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_docker_stop.md), [`grobid_docker_list_versions()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_docker_list_versions.md) | Management of the local GROBID container and version selection. |
+| [`grobid_remote_connect()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_remote_connect.md), [`grobid_server_info()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_server_info.md) | Connection to a remote server and information about the active server. |
+| [`checkrefr_set_defaults()`](https://CheckrefR.github.io/CheckrefR/reference/checkrefr_set_defaults.md), [`checkrefr_env_reset()`](https://CheckrefR.github.io/CheckrefR/reference/checkrefr_env_reset.md) | Setting and resetting the package’s default parameters. |
+
+## Limitations and caution
+
+- **Experimental version**: the package’s functions (names, arguments,
+  result format) and the results they produce may still change from one
+  version to the next.
+- **Matching scores**: the current formula is being revised. It has
+  known limitations, notably in the comparison of **authors** (risk of
+  false positives on compound or particle-containing names, and
+  sensitivity to diacritics). More formal tests will be conducted.
+- **A score is not proof**: in particular for books, chapters, and
+  conference proceedings (often without a DOI), and for references that
+  are false but close to real ones, **manual verification** remains
+  necessary given the current state of development of the matching
+  score.
+- **Demo servers**: to be reserved for trials.
+
+## Example datasets
+
+The package provides example files in `inst/extdata`, accessible via
+[`system.file()`](https://rdrr.io/r/base/system.file.html):
+
+``` r
+
+# PDF files (scientific articles)
+pdf_files <- list.files(
+  system.file("extdata", package = "CheckrefR"),
+  pattern = "\\.pdf $ ", full.names = TRUE
+)
+
+# Text files (lists of APA references)
+txt_files <- list.files(
+  system.file("extdata", package = "CheckrefR"),
+  pattern = "\\.txt $ ", full.names = TRUE
+)
+```
+
+The `ref_test.txt` file contains 14 test references (exact references,
+misattributed or fabricated DOIs, nonexistent references, or references
+close to real ones): it allows you to test the entire pipeline without
+providing your own documents.
+
+## Documentation
+
+The full documentation is available on the package website:
+<https://checkrefr.github.io/CheckrefR/>
+
+It includes in particular:
+
+- **Get started**: overview, installation, environment setup (Docker or
+  remote server), first calls.
+- **GROBID Server Setup and Administration**: starting, connecting,
+  versions, and default parameters.
+- **Document Processing and XML Extraction**: GROBID services, batch
+  processing, `parse_*()`,
+  [`parse_apa_text()`](https://CheckrefR.github.io/CheckrefR/reference/parse_apa_text.md).
+- **Reference Validation Pipeline and Scoring**: validation pipeline,
+  scoring and its limitations, deduplication.
+
+The documentation for each function is also available via
+`?function_name` or
+[`help(package = "CheckrefR")`](https://rdrr.io/pkg/CheckrefR/man).
+
+## License
+
+This package is distributed under the **GPL-3** license (`GPL (>= 3)`).
+See the [LICENSE.md](https://CheckrefR.github.io/CheckrefR/LICENSE.md)
+file for the full text.
+
+## How to cite
+
+``` r
+
+citation("CheckrefR")
+```
+
+Pending the release of a stable version, you can cite the project as
+follows:
+
+> Jollivet, M. (2026). *CheckrefR: Parse Scientific Documents and
+> Validate Citations with ‘GROBID’*. R package version 0.0.0.1.
+> <https://github.com/CheckrefR/CheckrefR>
+
+## Contributing
+
+The project is young and contributions are welcome, particularly in the
+following areas:
+
+- **Tests**: current coverage is partial (tracked via
+  [Codecov](https://app.codecov.io/gh/CheckrefR/CheckrefR)). **Unit
+  tests** (`testthat`) and **integration tests** are especially
+  appreciated, whether for extraction functions, parsing, or validation.
+- Report a bug or suggest a feature via an
+  [issue](https://github.com/CheckrefR/CheckrefR/issues).
+
+To propose a change via a *pull request*:
+
+1.  Fork the repository and create a branch dedicated to your
+    contribution.
+2.  Add or update the tests corresponding to your changes.
+3.  Make sure
+    [`devtools::check()`](https://devtools.r-lib.org/reference/check.html)
+    passes without errors.
+4.  Clearly describe the changes made in your pull request.
+
+*(This section will be expanded with more detailed instructions,
+including a code style guide, as the project matures.)*
+
+# Package index
+
+## Environment & Installation Diagnostics
+
+Functions to diagnose the local OS, dependencies, and guide the user
+through installation steps.
+
+- [`grobid_check_requirements()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_check_requirements.md)
+  : Check system requirements for using GROBID
+- [`grobid_install_guide()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_install_guide.md)
+  : Display an installation guide adapted to the environment
+- [`grobid_server_info()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_server_info.md)
+  : Get information about the configured GROBID server
+
+## GROBID Server Management
+
+Manage local Docker containers running GROBID or establish connections
+to remote servers.
+
+- [`grobid_docker_check()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_docker_check.md)
+  : Check whether Docker is available on the system
+- [`grobid_docker_start()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_docker_start.md)
+  : Start the GROBID container via Docker
+- [`grobid_docker_stop()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_docker_stop.md)
+  : Stop the currently running GROBID Docker container
+- [`grobid_docker_list_versions()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_docker_list_versions.md)
+  : List available GROBID Docker versions on Docker Hub
+- [`grobid_remote_connect()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_remote_connect.md)
+  : Configure the connection to a remote GROBID server
+
+## Package Configuration & State
+
+View and modify the default values, thresholds, and weights of the
+CheckrefR internal environment.
+
+- [`checkrefr_env_status()`](https://CheckrefR.github.io/CheckrefR/reference/checkrefr_env_status.md)
+  : Display the status of the internal checkrefr environment
+- [`checkrefr_env_reset()`](https://CheckrefR.github.io/CheckrefR/reference/checkrefr_env_reset.md)
+  : Reset the CheckrefR environment to its default values
+- [`checkrefr_set_defaults()`](https://CheckrefR.github.io/CheckrefR/reference/checkrefr_set_defaults.md)
+  : Modify the default values of the CheckrefR environment
+- [`oa_matching_info()`](https://CheckrefR.github.io/CheckrefR/reference/oa_matching_info.md)
+  : Get OpenAlex matching parameters information
+
+## Document Processing & Batch Execution
+
+Run GROBID extraction services on individual files, text batches, or
+entire directories.
+
+- [`grobid_process_file()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_process_file.md)
+  : Run a GROBID service on a single file
+- [`grobid_process_files()`](https://CheckrefR.github.io/CheckrefR/reference/grobid_process_files.md)
+  : Run a GROBID service on multiple files (batch processing)
+- [`process_citation_file()`](https://CheckrefR.github.io/CheckrefR/reference/process_citation_file.md)
+  : Process a text file of citations via GROBID
+
+## XML Parsing & Structuring
+
+Extract and parse specific segments of TEI/XML outputs returned by
+GROBID into structured data frames.
+
+- [`parse_fulltext()`](https://CheckrefR.github.io/CheckrefR/reference/parse_fulltext.md)
+  : Parse the GROBID full-text XML output
+- [`parse_header()`](https://CheckrefR.github.io/CheckrefR/reference/parse_header.md)
+  : Parse the GROBID header XML output of the document
+- [`parse_references()`](https://CheckrefR.github.io/CheckrefR/reference/parse_references.md)
+  : Parse the GROBID XML output of bibliographic references
+- [`parse_citation_list()`](https://CheckrefR.github.io/CheckrefR/reference/parse_citation_list.md)
+  : Parse the GROBID XML output of a citation list
+
+## Reference Validation & Cross-Matching
+
+Query OpenAlex and Crossref to validate reference metadata and filter
+results.
+
+- [`validate_references()`](https://CheckrefR.github.io/CheckrefR/reference/validate_references.md)
+  : Validate a set of bibliographic references via OpenAlex
+- [`deduplicate_references()`](https://CheckrefR.github.io/CheckrefR/reference/deduplicate_references.md)
+  : Deduplicate validation results by keeping the best candidate per
+  reference
+- [`check_doi_exists()`](https://CheckrefR.github.io/CheckrefR/reference/check_doi_exists.md)
+  : Check the existence of one or more DOIs
+
+## APA 7 Text Citation Utilities
+
+Functions designed to parse, format, and prepare raw text strings
+formatted according to APA 7 rules.
+
+- [`parse_apa_text()`](https://CheckrefR.github.io/CheckrefR/reference/parse_apa_text.md)
+  : Parse one or several references in APA 7 format
+- [`format_apa_for_validation()`](https://CheckrefR.github.io/CheckrefR/reference/format_apa_for_validation.md)
+  : Format APA results for validation pipeline
+
+## Author Similarity Scoring
+
+Fine-grained name-matching metrics and algorithms used inside the
+validation pipeline.
+
+- [`compute_author_score()`](https://CheckrefR.github.io/CheckrefR/reference/compute_author_score.md)
+  : Compute a global similarity score between two lists of authors
+- [`sim_author_pair()`](https://CheckrefR.github.io/CheckrefR/reference/sim_author_pair.md)
+  : Compute a similarity score between two author names
+
+## Text Preprocessing Functions
+
+Unicode normalization and string cleaning functions.
+
+- [`remove_diacritics()`](https://CheckrefR.github.io/CheckrefR/reference/remove_diacritics.md)
+  : Remove Diacritics and Transliterate Ligatures
+- [`to_lower_unicode()`](https://CheckrefR.github.io/CheckrefR/reference/to_lower_unicode.md)
+  : Convert Unicode Text to Lowercase
+
+# Articles
+
+### All vignettes
+
+- [Document Processing and XML
+  Extraction](https://CheckrefR.github.io/CheckrefR/articles/document-processing-extraction.md):
+- [Get
+  started](https://CheckrefR.github.io/CheckrefR/articles/get-started.md):
+- [GROBID Server Setup and
+  Administration](https://CheckrefR.github.io/CheckrefR/articles/grobid-server-setup.md):
+- [Reference Validation Pipeline and
+  Scoring](https://CheckrefR.github.io/CheckrefR/articles/reference-validation-pipeline.md):

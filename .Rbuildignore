@@ -13,6 +13,8 @@
 ^README2\.Rmd$
 ^test_complet_real\.html$
 ^_pkgdown\.yml$
-^docs$
 ^pkgdown$
 ^data-raw$
+^vignettes/.*\.orig$
+^vignettes/.*\.rds$
+^vignettes/cache_.*
