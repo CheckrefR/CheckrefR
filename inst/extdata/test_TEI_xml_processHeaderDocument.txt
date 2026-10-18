@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TEI xml:space="preserve" xmlns="http://www.tei-c.org/ns/1.0" 
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+xsi:schemaLocation="http://www.tei-c.org/ns/1.0 https://raw.githubusercontent.com/kermitt2/grobid/master/grobid-home/schemas/xsd/Grobid.xsd"
+ xmlns:xlink="http://www.w3.org/1999/xlink">
+	<teiHeader xml:lang="en">
+		<fileDesc>
+			<titleStmt>
+				<title level="a" type="main">Role of ivermectin and colchicine in the treatment of COVID-19: a randomized controlled clinical trial</title>
+			</titleStmt>
+			<publicationStmt>
+				<publisher/>
+				<availability status="unknown"><licence/></availability>
+			</publicationStmt>
+			<sourceDesc>
+				<biblStruct status="extracted">
+					<analytic>
+						<author>
+							<persName><forename type="first">Hemmat</forename><surname>Abd</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">El-Salam</forename><forename type="middle">Ahmed</forename><surname>Salama</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Family Medicine Department</orgName>
+								<orgName type="department" key="dep2">Faculty of Medicine</orgName>
+								<orgName type="institution">Ain Shams University</orgName>
+								<address>
+									<settlement>Cairo</settlement>
+									<country key="EG">Egypt</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Eman</forename><surname>El-Sayed</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department" key="dep1">Internal Medicine Department</orgName>
+								<orgName type="department" key="dep2">Faculty of Medicine</orgName>
+								<orgName type="institution">Ain Shams University</orgName>
+								<address>
+									<settlement>Cairo</settlement>
+									<country key="EG">Egypt</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ghada</forename><surname>Essam</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">El-Din</forename><surname>Amin</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Family Medicine Department</orgName>
+								<orgName type="department" key="dep2">Faculty of Medicine</orgName>
+								<orgName type="institution">Ain Shams University</orgName>
+								<address>
+									<settlement>Cairo</settlement>
+									<country key="EG">Egypt</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Mohamed</forename><forename type="middle">Farouk</forename><surname>Allam</surname></persName>
+							<affiliation key="aff0">
+								<orgName type="department" key="dep1">Family Medicine Department</orgName>
+								<orgName type="department" key="dep2">Faculty of Medicine</orgName>
+								<orgName type="institution">Ain Shams University</orgName>
+								<address>
+									<settlement>Cairo</settlement>
+									<country key="EG">Egypt</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Ahmed</forename><surname>Nour</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">El-Din</forename><surname>Hassan</surname></persName>
+							<affiliation key="aff2">
+								<orgName type="department" key="dep1">Clinical Pharmacology Department</orgName>
+								<orgName type="department" key="dep2">Faculty of Medicine</orgName>
+								<orgName type="institution">Galala University</orgName>
+								<address>
+									<settlement>Suez</settlement>
+									<country key="EG">Egypt</country>
+								</address>
+							</affiliation>
+							<affiliation key="aff3">
+								<orgName type="department" key="dep1">Clinical Pharmacology Department</orgName>
+								<orgName type="department" key="dep2">Faculty of Medicine</orgName>
+								<orgName type="institution">Ain Shams University</orgName>
+								<address>
+									<settlement>Cairo</settlement>
+									<country key="EG">Egypt</country>
+								</address>
+							</affiliation>
+						</author>
+						<author>
+							<persName><forename type="first">Mohamed</forename><surname>Abd</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">El</forename><surname>Rahman</surname></persName>
+						</author>
+						<author>
+							<persName><forename type="first">Hassan</forename><surname>El</surname></persName>
+							<affiliation key="aff1">
+								<orgName type="department" key="dep1">Internal Medicine Department</orgName>
+								<orgName type="department" key="dep2">Faculty of Medicine</orgName>
+								<orgName type="institution">Ain Shams University</orgName>
+								<address>
+									<settlement>Cairo</settlement>
+									<country key="EG">Egypt</country>
+								</address>
+							</affiliation>
+						</author>
+						<title level="a" type="main">Role of ivermectin and colchicine in the treatment of COVID-19: a randomized controlled clinical trial</title>
+					</analytic>
+					<monogr>
+						<imprint>
+							<date/>
+						</imprint>
+					</monogr>
+					<idno type="MD5">F170D43D1B21B36FE5864DBEEB0C650A</idno>
+					<idno type="DOI">10.3855/jidc.19862</idno>
+					<note type="submission">Received 16 January 2024 -Accepted 11 March 2024</note>
+				</biblStruct>
+			</sourceDesc>
+		</fileDesc>
+		<encodingDesc>
+			<appInfo>
+				<application version="0.9.1" ident="GROBID" when="2026-08-06T17:12+0000">
+					<desc>GROBID - A machine learning software for extracting information from scholarly documents</desc>
+					<label type="revision">0.9.1</label>
+					<label type="parameters">startPage=0, endPage=2, consolidateCitations=0, consolidateHeader=0, consolidateFunders=0, includeRawAffiliations=false, includeRawCitations=false, includeRawCopyrights=false, generateTeiIds=false, generateTeiCoordinates=null, flavor=null, debugLabelingCollector=disabled</label>
+					<ref target="https://github.com/kermitt2/grobid"/>
+				</application>
+			</appInfo>
+		</encodingDesc>
+		<profileDesc>
+			<textClass>
+				<keywords>
+					<term>ivermectin</term>
+					<term>colchicine</term>
+					<term>COVID-19</term>
+					<term>clinical trial</term>
+					<term>Ain Shams University</term>
+				</keywords>
+			</textClass>
+			<abstract>
+				<p>Introduction: The objective of this study was to assess the effectiveness of ivermectin and colchicine as treatment options for coronavirus disease 2019 (COVID-19). Methodology: A three-arm randomized controlled clinical trial was conducted in the Triage Clinic of the family medicine department at Ain Shams University Hospitals on participants who had been diagnosed with moderate COVID-19. Patients aged &lt; 18 years or &gt; 65 years, with any co-morbidities, pregnant or lactating females, and those with mild or severe COVID-19 confirmed cases were excluded. Sealed envelopes were used for randomization of intervention or control. Patients are followed until there was improvement of symptoms and no development of new symptoms for over one month. Results: A total of 120 patients (40.16 ± 10.74 years) with COVID-19 were enrolled; 40 patients in each arm. Out of them, 44 (36.6%) were male and 76 (63.4%) were female. Fever and cough were the predominant symptoms in each group. There was no statistically significant difference in the mean duration of fever between the ivermectin, colchicine, and control groups (7.3 ± 1.68, 6.6 ± 1.58, and 7.075 ± 1.58 days, respectively). The majority of patients (67.5%, 70%, and 72.5%) were completely cured within 10 days of infection, with no differences between the three groups (p &gt; 0.05). A statistically significant improvement of inflammatory markers occurred in each of the three groups over time with no statistically significant difference between them. Conclusions: Ivermectin and colchicine have no beneficial effect over standard care in the treatment of COVID-19.</p>
+			</abstract>
+		</profileDesc>
+	</teiHeader>
+	<text xml:lang="en">
+	</text>
+</TEI>
+

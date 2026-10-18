@@ -1,0 +1,405 @@
+---
+title: "GROBID Server Setup and Administration"
+output:
+  rmarkdown::html_vignette:
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{GROBID Server Setup and Administration}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{css, echo=FALSE}
+.encadre {
+  border: 2px solid #31708f;
+  border-radius: 6px;
+  padding: 10px 15px;
+  margin: 15px 0;
+  background-color: #f9fcfe;
+}
+
+table.table caption {
+  caption-side: top;
+}
+```
+
+```{r setup-options, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+```{r setup-packages, include = FALSE}
+library(CheckrefR)
+library(knitr)
+library(kableExtra)
+```
+
+```{r setup-helper-table, include = FALSE}
+# Mise en forme homogène des tableaux du site
+kable_site <- function(x, caption = NULL, ...) {
+  x |>
+    kbl(caption = caption, booktabs = TRUE, ...) |>
+    kable_styling(
+      bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+      full_width = FALSE,
+      font_size = 13,
+      html_font = NULL
+    ) |>
+    row_spec(0, extra_css = "")  # facultatif
+}
+```
+
+# Introduction
+
+La page [Get started](get-started.html) présente le démarrage rapide de GROBID. Cette page va plus loin : elle détaille **comment configurer, piloter et surveiller le serveur GROBID** utilisé par CheckrefR, qu'il s'exécute sur votre machine (mode local, via Docker) ou ailleurs (mode distant).
+
+Elle suit l'ordre logique d'une session de travail :
+
+1.  **Choisir un modèle** : `crf` ou `full` ;
+2.  **Choisir où tourne GROBID** : en local avec `grobid_docker_start()` (après avoir éventuellement consulté les versions disponibles avec `grobid_docker_list_versions()`), ou à distance avec `grobid_remote_connect()` ;
+3.  **Vérifier l'état du serveur** avec `grobid_server_info()` ;
+4.  **Arrêter le serveur local** avec `grobid_docker_stop()` ;
+5.  **Enregistrer ses réglages pour la session** avec `checkrefr_set_defaults()`, et les **réinitialiser** avec `checkrefr_env_reset()`.
+
+::: {.encadre}
+**Rappel.** Ces fonctions ne sont pas obligatoires pour un usage courant : `grobid_process_file()` et `grobid_process_files()` démarrent ou rejoignent automatiquement un serveur à partir des arguments `mode` et `model_type`. Les fonctions de cette page servent à **régler finement** la configuration et à **contrôler** l'état du serveur.
+:::
+
+# Choisir un modèle : `crf` ou `full`
+
+GROBID est distribué en deux variantes principales, qui diffèrent par la technique d'apprentissage automatique utilisée pour analyser les documents.
+
+| Modèle | Principe | Avantages | Contraintes |
+|:--|:--|:--|:--|
+| `crf` | Modèle statistique classique (*Conditional Random Fields*) | Plus **rapide** et plus **léger** | Généralement **moins précis** |
+| `full` | Combine le modèle CRF et des modèles neuronaux (*deep learning*) | Généralement **plus précis** | Plus **lent** et plus **exigeant en ressources** (mémoire, temps de calcul) |
+
+Le choix se fait avec l'argument `model_type` (`"crf"` ou `"full"`), présent dans `grobid_docker_start()`, `grobid_remote_connect()`, `grobid_process_file()` et `grobid_process_files()`. Si vous ne le renseignez pas, le comportement dépend du mode :
+
+-   **en local**, l'image Docker standard (sans suffixe) est utilisée ;
+-   **à distance**, le serveur de démonstration `crf` est utilisé.
+
+::: {.encadre}
+**Pour en savoir plus.** Les différences entre modèles, et la façon de les configurer côté GROBID, sont décrites dans la documentation officielle :
+
+-   [GROBID avec Docker](https://grobid.readthedocs.io/en/latest/Grobid-docker/) ;
+-   [Configuration par fichier YAML](https://grobid.readthedocs.io/en/latest/Grobid-docker/#configure-using-the-yaml-config-file) ;
+-   [Service GROBID](https://grobid.readthedocs.io/en/latest/Grobid-service/).
+:::
+
+# Mode local : Docker
+
+## Consulter les versions disponibles : `grobid_docker_list_versions()`
+
+Avant de choisir une version de GROBID, vous pouvez lister celles qui sont publiées sur **Docker Hub**, la plateforme où sont hébergées les images. Cette fonction ne nécessite **pas** que Docker soit installé : elle interroge simplement le site via Internet.
+
+```{r docker-list-versions, eval = TRUE, message=TRUE}
+versions <- grobid_docker_list_versions(verbose = TRUE)
+```
+
+Le résultat est un tableau, trié de la mise à jour la plus récente à la plus ancienne :
+
+```{r docker-list-versions-table, eval = FALSE}
+versions |>
+  head(10) |>
+  kable_site(caption = "Dix versions d'image les plus récentes sur Docker Hub")
+```
+
+### Données retourné par la fonction
+
+| Colonne | Contenu |
+|:--|:--|
+| `name` | Nom de l'étiquette (*tag*), par exemple `0.9.0-crf` ou `0.9.0-full` |
+| `full_size` | Taille de l'image, en octets |
+| `last_updated` | Date de dernière mise à jour |
+| `digest` | Empreinte unique de l'image |
+
+### Arguments de la fonction
+
+| Argument | Rôle | Valeur par défaut |
+|:--|:-----|:----|
+| `repository` | Dépôt à interroger (`espace/image`) | Dépôt dérivé de l'image configurée (`lfoppiano/grobid`) |
+| `page_size` | Nombre d'étiquettes demandées par page | `100` |
+| `max_pages` | Nombre maximal de pages parcourues | `10` |
+| `verbose` | Affiche un aperçu des 20 premières étiquettes | `TRUE` |
+
+```{r docker-list-versions-repo, eval = FALSE}
+# Interroger un autre dépôt
+grobid_docker_list_versions(repository = "grobid/grobid")
+```
+
+::: {.encadre}
+**Lire un nom d'étiquette.** Les étiquettes suivent la forme `{version}`, `{version}-crf` ou `{version}-full`. Le suffixe correspond au modèle choisi (voir la section précédente). Le nom de la version que vous retenez se passe ensuite à l'argument `grobid_version` de `grobid_docker_start()`.
+:::
+
+## Démarrer GROBID en local : `grobid_docker_start()`
+
+Cette fonction lance GROBID dans un conteneur Docker sur votre machine. Elle accepte les réglages suivants :
+
+| Argument | Rôle | Valeur par défaut |
+|:--|:--|:--|
+| `model_type` | Modèle : `"crf"` ou `"full"` (voir plus haut) | non défini (image standard) |
+| `grobid_version` | Version de GROBID | `"0.9.0"` |
+| `docker_image` | Base du nom de l'image Docker | `"lfoppiano/grobid:"` |
+| `port` | Port de votre machine sur lequel le service est accessible | `8070` |
+| `max_ram` | Mémoire maximale allouée au conteneur (ex. `"4g"`, `"8g"`, `"512m"`) | `"4g"` |
+| `pull` | Force le téléchargement de l'image avant le lancement | `FALSE` |
+| `timeout_ready` | Temps d'attente maximal (secondes) avant que GROBID soit prêt | `120` |
+| `verbose` | Messages de progression | `TRUE` |
+
+```{r docker-start-default, eval = FALSE}
+# Démarrage avec les réglages par défaut
+grobid_docker_start()
+```
+
+```{r docker-start-custom, eval = FALSE}
+# Modèle complet, davantage de mémoire
+grobid_docker_start(model_type = "full", max_ram = "8g")
+
+# Version précise de GROBID, sur un autre port
+grobid_docker_start(grobid_version = "0.8.1", port = 8080)
+
+# Forcer la mise à jour de l'image
+grobid_docker_start(pull = TRUE)
+```
+
+::: {.encadre}
+**Premier lancement : téléchargement de l'image.** La première fois, l'image correspondant à la version et au modèle demandés doit être téléchargée. Cela peut prendre du temps (plusieurs Go pour le modèle `full`). Le téléchargement est **automatique** si l'image est absente de votre machine, même avec `pull = FALSE`. Le même téléchargement a lieu pour **chaque nouvelle combinaison** version/modèle jamais utilisée. L'argument `pull = TRUE` sert à forcer une mise à jour d'une image déjà présente.
+:::
+
+**Ce que la fonction vérifie et fait pour vous**
+
+-   elle contrôle que Docker est installé et tente de le démarrer s'il ne l'est pas ;
+-   elle **réutilise** le conteneur GROBID déjà actif si sa configuration correspond (même image, version, modèle, port) ; sinon, elle l'**arrête et le remplace** ;
+-   elle vérifie que le port demandé est libre ;
+-   elle attend que GROBID réponde avant de rendre la main ;
+-   elle enregistre la configuration (adresse, port, version, modèle) pour la session, afin que les autres fonctions l'utilisent.
+
+
+::: {.encadre}
+**Choisir `max_ram`.** Le modèle `full` demande davantage de mémoire. Si GROBID s'arrête ou ne démarre pas, augmentez cette valeur, dans la limite de ce que votre machine et la configuration de Docker (Docker Desktop sous Windows et macOS) autorisent.
+:::
+
+## Arrêter GROBID en local : `grobid_docker_stop()`
+
+Quand vous n'avez plus besoin du serveur local, arrêtez-le pour libérer la mémoire et le port.
+
+```{r docker-stop, eval = FALSE}
+grobid_docker_stop()
+```
+
+| Argument | Rôle |
+|:--|:--|
+| `container_id` | Identifiant d'un conteneur précis. Par défaut, celui démarré par `grobid_docker_start()` ; à défaut, la fonction cherche un conteneur GROBID actif. |
+| `verbose` | Messages de progression. |
+
+Le conteneur étant lancé en mode « jetable », il est **supprimé automatiquement** à l'arrêt. La fonction retourne `TRUE` (de façon invisible) si le conteneur est arrêté ou n'était déjà plus actif, et `FALSE` si aucun conteneur n'a été identifié ou si Docker n'est pas démarré.
+
+::: {.encadre}
+**Connexion distante préservée.** Si vous êtes connecté à un serveur distant, l'arrêt d'un conteneur local résiduel **ne supprime pas** cette connexion distante : seule la configuration liée au mode local est réinitialisée.
+:::
+
+# Mode distant : `grobid_remote_connect()`
+
+Cette fonction teste puis mémorise l'adresse d'un serveur GROBID accessible par Internet. Elle essaie les adresses candidates dans l'ordre et **retient la première qui répond**.
+
+::: {.encadre}
+**Serveurs de démonstration.** Sans adresse (`url`) fournie, CheckrefR utilise des serveurs de **démonstration** hébergés sur Hugging Face. Ils sont partagés, parfois lents ou indisponibles, et ne conviennent pas à des documents sensibles ou volumineux. Pour un usage régulier, préférez le **mode local** ou **votre propre serveur** (`url`).
+:::
+
+| Argument | Rôle | Valeur par défaut |
+|:--|:--|:--|
+| `url` | Adresse de **votre propre serveur**. Si elle est fournie, elle est utilisée seule et les serveurs de démonstration sont ignorés. | `NULL` |
+| `model_type` | `"crf"` ou `"full"` : choisit la liste de serveurs de démonstration à tester. | non défini (traité comme `crf`) |
+| `timeout` | Délai de connexion en secondes. Chaque serveur candidat est testé pendant 120 secondes au maximum. | `120` |
+| `verbose` | Affiche les adresses testées et le résultat. | `TRUE` |
+
+```{r remote-connect-default, eval = FALSE}
+# Serveurs de démonstration, modèle crf
+grobid_remote_connect()
+
+# Serveurs de démonstration, modèle full
+grobid_remote_connect(model_type = "full")
+```
+
+```{r remote-connect-own-server, eval = FALSE}
+# Votre propre serveur (recommandé hors Docker)
+grobid_remote_connect(url = "https://mon-serveur-grobid.exemple.org")
+```
+
+Les serveurs de démonstration testés par défaut sont :
+
+```{r remote-default-urls, eval = TRUE}
+urls <- CheckrefR:::.checkrefr_defaults$remote_default_url
+
+data.frame(
+  Modèle  = rep(names(urls), lengths(urls)),
+  Serveur = unlist(urls, use.names = FALSE)
+) |>
+  kable_site(caption = "Serveurs de démonstration par défaut")
+```
+
+La fonction retourne `TRUE` (de façon invisible) en cas de succès, et s'arrête avec une erreur indiquant les adresses testées si aucun serveur ne répond. Si vous êtes déjà connecté à un serveur distant qui répond, avec le même modèle, la connexion existante est simplement réutilisée.
+
+::: {.encadre}
+**Votre propre serveur.** Vous pouvez remplacer durablement (pour la session) les serveurs de démonstration par les vôtres avec `checkrefr_set_defaults(remote_default_url = ...)` (voir plus bas). Ainsi, `grobid_remote_connect()` et les fonctions de traitement utiliseront vos serveurs sans qu'il soit nécessaire de répéter l'adresse.
+:::
+
+# Surveiller le serveur : `grobid_server_info()`
+
+Cette fonction affiche l'état du serveur actuellement configuré : mode, adresse, accessibilité et version.
+
+```{r server-info, eval = TRUE, message = TRUE}
+info <- grobid_server_info()
+```
+
+Le résultat est aussi retourné (de façon invisible) sous forme de liste :
+
+| Élément | Contenu |
+|:--|:--|
+| `mode` | `"docker"`, `"remote"` ou `"not configured"` |
+| `url` | Adresse du serveur, ou `NA` |
+| `api_reachable` | `TRUE` si le serveur répond |
+| `grobid_version` | Version de GROBID renvoyée par le serveur, sinon `NA` |
+| `timeout` | Délai utilisé pour le test, sinon `NA` |
+
+```{r server-info-list, eval = TRUE}
+str(info)
+```
+
+::: {.encadre}
+**Aucun serveur configuré.** Si aucun serveur n'a encore été démarré ou joint, la fonction n'effectue aucune connexion et retourne `mode = "not configured"`. C'est le cas normal au début d'une session, avant tout appel à `grobid_docker_start()`, `grobid_remote_connect()` ou aux fonctions de traitement.
+:::
+
+Un exemple de séquence complète, en mode local :
+
+```{r server-info-workflow, eval = FALSE}
+grobid_docker_start(model_type = "crf")
+grobid_server_info()   # mode "docker", serveur accessible
+grobid_docker_stop()
+grobid_server_info()   # retour à "not configured"
+```
+
+# Configurer ses réglages : `checkrefr_set_defaults()`
+
+Plutôt que de répéter les mêmes arguments à chaque appel, `checkrefr_set_defaults()` permet de **modifier les valeurs par défaut** du package pour la session en cours : version de GROBID, port, délais, nombre de processus parallèles, seuils et pondérations de validation, adresses de serveurs distants, etc.
+
+::: {.encadre}
+**Portée des réglages.** Ils sont conservés **uniquement pendant la session R en cours**. Ils ne sont pas enregistrés sur le disque : en redémarrant R, les valeurs d'origine sont rétablies. Pour retrouver vos réglages d'une session à l'autre, placez les appels à `checkrefr_set_defaults()` dans votre script de départ (ou dans votre fichier `.Rprofile`).
+:::
+
+```{r set-defaults-basic, eval = FALSE}
+# Une seule version de GROBID par défaut, un délai plus court
+# et deux processus parallèles
+checkrefr_set_defaults(
+  grobid_version = "0.8.1",
+  timeout        = 60L,
+  max_workers    = 2L
+)
+```
+
+La fonction affiche les paramètres modifiés. Appelée sans argument, elle n'applique aucun changement et vous invite à consulter l'état courant.
+
+## Paramètres modifiables
+
+### Connexion et serveur GROBID
+
+| Paramètre | Rôle | Valeur initiale |
+|:--|:--|:--|
+| `docker_image` | Base du nom de l'image Docker | `"lfoppiano/grobid:"` |
+| `grobid_version` | Version de GROBID | `"0.9.0"` |
+| `grobid_model_type` | Modèle par défaut (`"crf"`, `"full"` ou `NA`) | `NA` |
+| `docker_port` | Port local utilisé en mode Docker | `"8070"` |
+| `remote_default_url` | Serveurs distants par défaut (listes `crf` et `full`) | serveurs de démonstration |
+| `timeout` | Délai de connexion, en secondes | `120` |
+| `max_workers` | Nombre de processus parallèles pour `grobid_process_files()` | `4` |
+| `grobid_email` | Adresse e-mail associée aux requêtes | `NA` |
+
+::: {.encadre}
+**Paramètres protégés.** Les éléments qui décrivent l'**état courant** du serveur (`mode`, `server_url`, `docker_container_id`) et l'identité du package (`pkg_name`, `pkg_repo`) ne sont pas modifiables avec cette fonction. Ils sont gérés automatiquement par `grobid_docker_start()`, `grobid_remote_connect()` et `grobid_docker_stop()`.
+:::
+
+
+```{r set-defaults-credentials, eval = FALSE}
+# Identifiants pour OpenAlex et les services DOI
+checkrefr_set_defaults(
+  oa_api_key = "ma_cle_api",
+  doi_email  = "moi@example.com"
+)
+```
+
+## Déclarer ses propres serveurs distants
+
+Pour `remote_default_url`, vous indiquez une liste nommée avec les clés `crf` et/ou `full`. Les adresses fournies sont **fusionnées** avec la liste existante (les doublons sont supprimés) :
+
+-   un simple vecteur d'adresses les **ajoute à la fin** de la liste ;
+-   une liste nommée par des rangs (`"1"`, `"2"`, ...) les **insère à la position indiquée** ; le rang `1` place l'adresse en premier, donc testée avant les serveurs de démonstration.
+
+```{r set-defaults-remote-urls, eval = FALSE}
+# Votre serveur testé en premier pour le modèle full
+checkrefr_set_defaults(
+  remote_default_url = list(
+    full = list("1" = "https://mon-serveur.example.com")
+  )
+)
+
+# Ajout à la fin de la liste du modèle crf
+checkrefr_set_defaults(
+  remote_default_url = list(
+    crf = "https://mon-autre-serveur.example.com"
+  )
+)
+```
+
+# Réinitialiser ses réglages : `checkrefr_env_reset()`
+
+Pour revenir aux valeurs d'origine du package, utilisez `checkrefr_env_reset()`.
+
+| Argument | Rôle | Valeur par défaut |
+|:--|:--|:--|
+| `fields` | Noms des paramètres à réinitialiser. `NULL` : réinitialisation complète. | `NULL` |
+| `verbose` | Affiche les messages. | `TRUE` |
+
+**Réinitialisation partielle** : seuls les paramètres nommés retrouvent leur valeur d'origine.
+
+```{r env-reset-partial, message = TRUE}
+checkrefr_set_defaults(timeout = 30L, oa_min_threshold = 0.55)
+
+checkrefr_env_reset(fields = c("timeout", "oa_min_threshold"))
+```
+
+Un nom de paramètre inconnu est ignoré avec un avertissement, les autres noms étant tout de même réinitialisés :
+
+```{r env-reset-unknown, eval = FALSE}
+checkrefr_env_reset(fields = c("timeout", "variable_inexistante"))
+```
+
+**Réinitialisation complète** : tous les paramètres retrouvent leur valeur d'origine.
+
+```{r env-reset-full, eval = FALSE}
+checkrefr_env_reset()
+```
+
+::: {.encadre}
+**Réinitialisation complète et état du serveur.** La réinitialisation complète remet aussi à zéro l'**état du serveur** (mode, adresse, identifiant du conteneur). Si un conteneur GROBID local est encore actif, le package ne le « connaît » plus : arrêtez-le **avant** avec `grobid_docker_stop()`, sans quoi il continuera de tourner en arrière-plan. `grobid_docker_stop()` est toutefois capable de retrouver un conteneur GROBID actif même sans identifiant enregistré.
+:::
+
+La fonction retourne l'environnement interne du package de façon invisible ; son usage normal se limite aux messages affichés.
+
+# Récapitulatif
+
+| Besoin | Fonction |
+|:--|:--|
+| Connaître les versions d'image disponibles | `grobid_docker_list_versions()` |
+| Démarrer GROBID en local et régler version, modèle, port, mémoire | `grobid_docker_start()` |
+| Se connecter à un serveur distant, ou à son propre serveur | `grobid_remote_connect()` |
+| Vérifier l'état du serveur configuré | `grobid_server_info()` |
+| Arrêter le serveur local | `grobid_docker_stop()` |
+| Modifier les valeurs par défaut pour la session | `checkrefr_set_defaults()` |
+| Revenir aux valeurs d'origine | `checkrefr_env_reset()` |
+
+

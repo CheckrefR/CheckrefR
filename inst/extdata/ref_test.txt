@@ -1,0 +1,14 @@
+Deci, E. L., & Ryan, R. M. (2000). The "what" and "why" of goal pursuits: Human needs and the self-determination of behavior. Psychological Inquiry, 11(4), 227–268. https://doi.org/10.1207/S15327965PLI1104_01
+Mikolov, T., Chen, K., Corrado, G., & Dean, J. (2013). Efficient estimation of word representations in vector space. In Y. Bengio & Y. LeCun (Eds.), Proceedings of the 1st International Conference on Learning Representations (pp. 1–12). ICLR.
+Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł., & Polosukhin, I. (2017). Attention is all you need. arXiv. https://doi.org/10.48550/arXiv.1706.03762
+Kahneman, D. (2011). Thinking, fast and slow. Farrar, Straus and Giroux.
+Baumeister, R. F., & Leary, M. R. (1995). The need to belong: Desire for interpersonal attachments as a fundamental human motivation. In R. F. Baumeister (Ed.), Social psychology and human nature (pp. 497–529). Wadsworth.
+Bandura, A. (1977). Self-efficacy: Toward a unifying theory of behavioral change. Psychological Review, 84(2), 191–215. https://doi.org/10.1037/0003-066X.55.1.5
+Watson, D., Clark, L. A., & Tellegen, A. (1988). Development and validation of brief measures of positive and negative affect: The PANAS scales. Journal of Personality and Social Psychology, 54(6), 1063–1070. https://doi.org/10.1037/0022-3514.84.4.822
+Rogers, C. R. (1957). The necessary and sufficient conditions of therapeutic personality change. Journal of Consulting Psychology, 21(2), 95–103. https://doi.org/10.1037/h9999999
+Tversky, A., & Kahneman, D. (1974). Judgment under uncertainty: Heuristics and biases. Science, 185(4157), 1124–1131. https://doi.org/10.1126/science.1974.tk421
+Dupont, J.-M., & Tremblay, A. (2019). L'influence quantique de la pensée positive sur la mécanique cellulaire réversible. Journal of Impossible Psychology, 45(12), 3001–3045. https://doi.org/10.9999/fake.impossible.2019
+Smith, A. B., Johnson, C. D., & Williams, E. F. (2021). A study of nothing in particular that somehow got published. International Journal of Studies About Studies, 0(0), 1–1. https://doi.org/10.0000/null.void
+Kahneman, D., & Tversky, A. (1984). Thinking, slow and fast. Farrar, Straus and Giroux.
+Deci, E. L., & Ryan, R. M. (2001). The "how" and "why" of goal attainment: Human motivation and self-determination reconsidered. Psychological Inquiry, 12(3), 315–350. https://doi.org/10.1207/S15327965PLI1203_04
+Baumeister, R. F., & Leary, M. R. (1996). The need to belong: Desire for social bonding as a fundamental human need. In R. F. Baumeister & M. R. Leary (Eds.), Human nature and social psychology (pp. 495–530). Wadsworth.

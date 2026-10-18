@@ -1,0 +1,462 @@
+---
+title: "Document Processing and XML Extraction"
+output:
+  rmarkdown::html_vignette:
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Document Processing and XML Extraction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{css, echo=FALSE}
+.encadre {
+  border: 2px solid #31708f;
+  border-radius: 6px;
+  padding: 10px 15px;
+  margin: 15px 0;
+  background-color: #f9fcfe;
+}
+
+table.table caption {
+  caption-side: top;
+}
+
+```
+
+```{r setup-options, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+```{r setup-packages, include=FALSE}
+library(CheckrefR)
+library(dplyr)
+library(knitr)
+library(kableExtra)
+```
+
+```{r setup-helper-table, include = FALSE}
+kable_site <- function(x, caption = NULL, ...) {
+  x |>
+    kbl(caption = caption, booktabs = TRUE, ...) |>
+    kable_styling(
+      bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+      full_width = FALSE,
+      font_size = 13,
+      html_font = NULL
+    ) |>
+    row_spec(0, extra_css = "")  # facultatif
+}
+```
+
+# Introduction
+
+Cette page détaille la **première étape du travail avec CheckrefR : transformer un document ou une liste de références en données exploitables**. La page « Get started » en a donné un aperçu ; nous entrons ici dans le fonctionnement de chaque fonction.
+
+Nous verrons successivement :
+
+1.  **`grobid_process_file()`** : la fonction centrale, qui envoie **un** document à GROBID et récupère le résultat. Nous y présenterons les quatre services disponibles, leurs paramètres, et les deux « parcours » de sortie (XML brut ou tableau de données), ainsi que les fonctions `parse_*()` qui transforment le XML en tableau.
+2.  **`grobid_process_files()`** : une fonction qui répète le traitement sur **plusieurs** documents, avec exécution en parallèle et gestion des erreurs.
+3.  **`process_citation_file()`** : un raccourci pour traiter un fichier texte contenant une liste de références.
+4.  **`parse_apa_text()`** : une alternative **sans GROBID**, qui extrait les informations de références au format APA 7 à l'aide d'expressions régulières.
+
+Ces quatre fonctions réalisent des tâches voisines : produire, à partir de sources différentes, des **références structurées** (titre, auteurs, année, DOI…) prêtes pour la [validation](reference-validation-pipeline.html).
+
+::: {.encadre}
+**Rappel : GROBID et le XML.** GROBID est un outil qui lit un document (PDF) ou une référence en texte libre, et en extrait l'information bibliographique. Il renvoie son résultat dans un format appelé **TEI/XML**, un fichier texte balisé, lisible par une machine mais peu pratique pour l'analyse. CheckrefR peut donc vous remettre ce XML tel quel (« brut »), ou le **convertir en tableau de données** (« analysé »).
+:::
+
+# `grobid_process_file()` : traiter un document
+
+## Principe
+
+`grobid_process_file()` envoie **un seul fichier** à GROBID, en local ou à distance, et retourne le résultat. Elle s'occupe pour vous de vérifier que le serveur est actif (voir « Get started » et la page d'administration du serveur).
+
+```{r gpf-signature, eval = FALSE}
+grobid_process_file(
+  file,
+  service       = "processFulltextDocument",
+  params        = list(),
+  output_dir    = NULL,
+  output_format = "parsed",
+  mode          = NULL,
+  model_type    = .checkrefr_env$grobid_model_type,
+  verbose       = TRUE,
+  user_agent    = NULL
+)
+```
+
+Les arguments se répartissent en trois groupes :
+
+| Groupe | Arguments | Rôle |
+|:--|:--|:--|
+| **Quoi traiter** | `file`, `service`, `params` | Le document, le type d'analyse demandé, les options GROBID |
+| **Quoi obtenir** | `output_format`, `output_dir` | Format du résultat, sauvegarde éventuelle du XML |
+| **Où et comment** | `mode`, `model_type`, `verbose`, `user_agent` | Serveur utilisé et comportement technique |
+
+## Choisir un service
+
+L'argument `service` indique **quel type d'analyse** GROBID doit réaliser. Il existe quatre services :
+
+| `service` | Entrée attendue | Ce que l'on obtient | Fonction d'analyse associée |
+|:----|:---|:---------|:---|
+| `"processFulltextDocument"` (par défaut) | un PDF | Le texte complet, découpé par sections | `parse_fulltext()` |
+| `"processHeaderDocument"` | un PDF | Les métadonnées de l'en-tête (titre, auteurs, résumé, DOI…) | `parse_header()` |
+| `"processReferences"` | un PDF | La liste des références citées dans le document | `parse_references()` |
+| `"processCitationList"` | un fichier `.txt` ou un vecteur de références | Les références structurées à partir de texte libre | `parse_citation_list()` |
+
+::: {.encadre}
+**Quel service choisir ?** Pour valider les références d'un article, le service **`processReferences`** est généralement le plus direct : il ne retourne que la bibliographie. Utilisez **`processFulltextDocument`** si vous avez aussi besoin du texte de l'article, **`processHeaderDocument`** si seules les métadonnées de l'article vous intéressent, et **`processCitationList`** si vos références sont déjà dans un fichier texte (une par ligne).
+:::
+
+Les trois premiers services demandent un **PDF**. Seul `processCitationList` accepte un fichier texte `.txt` ou directement un vecteur de références.
+
+## Les deux parcours de sortie : `output_format`
+
+L'argument `output_format` détermine ce que la fonction vous renvoie. Il accepte deux valeurs :
+
+| `output_format` | Résultat | Quand l'utiliser |
+|:--|:--|:---|
+| `"parsed"` (par défaut) | Un **tableau de données** (tibble), prêt à l'analyse | Cas courant : on veut exploiter les données dans R |
+| `"raw"` | Le **XML brut** (une chaîne de caractères) | On veut conserver ou inspecter la réponse exacte de GROBID |
+
+### Parcours `output_format = "parsed"` : un tableau directement exploitable
+
+Avec la valeur par défaut, CheckrefR convertit automatiquement le XML en tableau, en utilisant la fonction d'analyse correspondant au service choisi. Une colonne `source_file` est ajoutée : elle contient le **nom** du fichier traité.
+
+```{r gpf-parsed, eval = FALSE}
+refs <- grobid_process_file(
+  file    = "mon_article.pdf",
+  service = "processReferences"
+)
+
+head(refs)
+```
+
+### Parcours `output_format = "raw"` : le XML brut et les fonctions `parse_*()`
+
+Avec `"raw"`, vous obtenez le XML tel que GROBID l'a produit, sous forme d'**une chaîne de caractères**. Cela permet de le conserver, de l'inspecter, ou de le **convertir plus tard** vous-même.
+
+```{r gpf-raw, eval = FALSE}
+xml <- grobid_process_file(
+  file          = "mon_article.pdf",
+  service       = "processReferences",
+  output_format = "raw"
+)
+
+substr(xml, 1, 300)   # aperçu du début du XML
+```
+
+La conversion en tableau est assurée par quatre fonctions publiques, **une par service**. Elles sont appelées automatiquement dans le parcours `"parsed"`, mais vous pouvez aussi les utiliser directement sur un XML déjà obtenu :
+
+| Fonction | Service associé | Contenu du tableau retourné |
+|:--|:--|:---------------|
+| `parse_fulltext()` | `processFulltextDocument` | Une ligne par **section** (titre, résumé, corps, remerciements, annexes), avec le texte (`content`), le nombre de mots (`n_words`) et de paragraphes (`n_paragraphs`) |
+| `parse_header()` | `processHeaderDocument` | **Une seule ligne** : titre, auteurs, revue, année, DOI, résumé, mots-clés, langue, nombre de références (`n_references`) |
+| `parse_references()` | `processReferences` | Une ligne par **référence** : référence brute, titre, auteurs, année, revue, volume, pages, DOI… |
+| `parse_citation_list()` | `processCitationList` | Une ligne par **référence** analysée, avec un indicateur de confiance (`parse_confidence`) et un type de référence (`ref_type`) |
+
+```{r gpf-parse-functions, eval = FALSE}
+# Le même XML peut être converti avec la fonction adaptée
+refs   <- parse_references(xml)
+header <- parse_header(xml)
+texte  <- parse_fulltext(xml)
+```
+
+::: {.encadre}
+**Une fonction `parse_*()` par service.** Le XML renvoyé par chaque service a une structure différente. Il faut donc utiliser la fonction `parse_*()` qui correspond au service avec lequel le XML a été obtenu. Ces fonctions acceptent un XML sous forme de texte, de fichier ou d'objet `xml2`.
+:::
+
+### Sauvegarder le XML avec `output_dir`
+
+L'argument `output_dir` permet d'**écrire le XML sur disque**, dans un dossier créé si nécessaire. Le fichier porte le nom du document source, suivi de l'extension `.tei.xml` (pour une liste de références envoyée en vecteur, il s'appelle `citations.tei.xml`).
+
+```{r gpf-output-dir, eval = FALSE}
+grobid_process_file(
+  file       = "mon_article.pdf",
+  service    = "processReferences",
+  output_dir = "xml_sortie"
+)
+```
+
+::: {.encadre}
+**Points d'attention sur `output_dir`.**
+
+-   Lorsque `output_dir` est renseigné, la fonction retourne le **XML brut** (de façon invisible), et **non le chemin du fichier écrit**, quelle que soit la valeur de `output_format`.
+-   **Il n'existe pas de protection contre l'écrasement** : si un fichier du même nom existe déjà dans le dossier, il est remplacé sans avertissement.
+:::
+
+## Régler l'analyse avec `params`
+
+L'argument `params` est une **liste d'options** transmises telles quelles à GROBID. Elles permettent d'ajuster le traitement : par exemple, demander à GROBID de **consolider** les références en les vérifiant auprès d'une base externe, ou de conserver le **texte brut** des références.
+
+```{r gpf-params, eval = FALSE}
+refs <- grobid_process_file(
+  file    = "mon_article.pdf",
+  service = "processReferences",
+  params  = list(consolidateCitations = 1)
+)
+```
+
+Les paramètres disponibles dépendent du service et de la version de GROBID. Les plus courants sont :
+
+| Paramètre | Effet (en bref) | Services concernés |
+|:--|:------------|:------|
+| `consolidateHeader` | Consolide les métadonnées de l'en-tête avec une base externe | En-tête, texte complet |
+| `consolidateCitations` | Consolide les références avec une base externe | Références, texte complet, liste de références |
+| `includeRawCitations` | Inclut le texte brut des références dans le XML | Références, liste de références |
+| `segmentSentences` | Découpe le texte en phrases | Texte complet |
+| `teiCoordinates` | Ajoute les coordonnées des éléments dans le PDF | Texte complet, références |
+
+Pour la liste complète, les valeurs possibles et leur effet exact, consultez la [documentation de l'API de GROBID](https://grobid.readthedocs.io/en/latest/Grobid-service/).
+
+::: {.encadre}
+**Bon à savoir.**
+
+-   **Aucune validation n'est faite sur `params`** : CheckrefR transmet vos options à GROBID sans les vérifier. Une option inconnue ou mal orthographiée sera simplement ignorée ou refusée par GROBID.
+-   **`includeRawCitations`** est ajouté **automatiquement** (valeur `1`) pour les services `processReferences` et `processCitationList`, afin que la référence d'origine soit conservée dans la colonne `raw_reference`.
+-   **La consolidation** (`consolidateHeader`, `consolidateCitations`) fait appel à des services externes : elle ralentit le traitement et peut modifier les métadonnées retournées. Si votre objectif est de **vérifier** des références avec `validate_references()`, il est généralement préférable de ne pas consolider au préalable, pour ne pas « corriger » en amont les erreurs que vous cherchez à repérer.
+:::
+
+## Serveur, modèle et autres arguments
+
+Les arguments `mode` (`"docker"` ou `"remote"`) et `model_type` (`"crf"` ou `"full"`) déterminent **quel serveur GROBID** est utilisé et **quel modèle** il applique. Ils ont été présentés dans « Get started » et sont détaillés dans la page « GROBID Server Setup and Administration » : nous n'y revenons pas ici. Rappelons simplement que, si le serveur n'est pas actif, il est démarré ou joint automatiquement.
+
+Les autres arguments sont d'usage plus technique :
+
+| Argument | Rôle |
+|:--|:-----------|
+| `verbose` | Affiche (`TRUE`) ou non les messages d'avancement |
+| `.ensure_server` | Si `TRUE` (par défaut), vérifie ou démarre le serveur avant la requête. À mettre à `FALSE` uniquement si vous gérez vous-même le serveur |
+| `user_agent` | Texte d'identification envoyé au serveur. Par défaut, CheckrefR s'identifie avec son nom et sa version |
+
+## Comportement en cas de problème
+
+-   Si le serveur est **momentanément surchargé** (réponse HTTP 503, fréquente sur les serveurs de démonstration), la requête est **retentée automatiquement**, jusqu'à 3 fois, avec 10 secondes d'attente entre les essais.
+-   Si GROBID ne renvoie **aucun résultat**, la fonction retourne `NA` (de façon invisible).
+-   Un fichier absent ou d'un **mauvais type** (par exemple un `.txt` pour un service PDF) provoque une erreur explicite.
+
+# `grobid_process_files()` : traiter plusieurs documents
+
+## Principe
+
+`grobid_process_files()` applique `grobid_process_file()` à **chaque élément d'un vecteur de chemins**. Elle reprend donc les mêmes arguments `service`, `params`, `output_dir`, `output_format`, `mode`, `model_type` et `user_agent`, avec le même sens. Elle y ajoute ce qui est nécessaire pour traiter un lot : **parallélisme**, **barre de progression**, **gestion des erreurs** et **assemblage des résultats**.
+
+```{r gpfs-signature, eval = FALSE}
+grobid_process_files(
+  files,
+  service       = "processFulltextDocument",
+  params        = list(),
+  output_dir    = NULL,
+  output_format = "parsed",
+  parallel      = length(files) > 5L,
+  n_workers     = .checkrefr_env $ max_workers,
+  progress      = TRUE,
+  mode          = NULL,
+  model_type    = .checkrefr_env $ grobid_model_type,
+  on_error      = "warn",
+  user_agent    = NULL
+)
+```
+
+```{r gpfs-example, eval = FALSE}
+pdfs <- list.files("mes_pdf", pattern = "\\.pdf$", full.names = TRUE)
+
+refs <- grobid_process_files(
+  files   = pdfs,
+  service = "processReferences"
+)
+```
+
+::: {.encadre}
+**La fonction ne parcourt pas de dossier.** `files` doit être un **vecteur de chemins déjà construit** (par exemple avec `list.files()`). Il n'y a pas d'argument pour filtrer par motif, parcourir les sous-dossiers ou ignorer les fichiers déjà traités.
+:::
+
+## Les arguments ajoutés
+
+| Argument | Valeur par défaut | Rôle |
+|:--|:-------|:------------|
+| `files` | (obligatoire) | Vecteur de chemins de fichiers |
+| `parallel` | `TRUE` si plus de 5 fichiers | Traite plusieurs fichiers **en même temps** |
+| `n_workers` | valeur interne du package | Nombre de traitements simultanés |
+| `progress` | `TRUE` | Affiche une barre de progression |
+| `on_error` | `"warn"` | Que faire si un fichier échoue : `"warn"` ou `"stop"` |
+
+### Traitement en parallèle
+
+Traiter plusieurs fichiers simultanément accélère le travail. Le nombre de traitements simultanés dépend du mode :
+
+-   **Mode `"docker"`** : le nombre demandé (`n_workers`) est plafonné au nombre de cœurs de votre ordinateur moins un.
+-   **Mode `"remote"`** : le nombre est **toujours fixé à 2**, quelle que soit la valeur demandée, pour ne pas surcharger les serveurs de démonstration.
+
+::: {.encadre}
+**Barre de progression.** L'argument `progress` n'a d'effet qu'en traitement **séquentiel** (sans parallélisme). En mode parallèle, aucune barre n'est affichée.
+:::
+
+### Gestion des erreurs : `on_error`
+
+-   `on_error = "warn"` (par défaut) : en cas d'échec sur un fichier, un **avertissement** est émis et le traitement **continue** avec les fichiers suivants. Le fichier concerné donne un résultat `NA`.
+-   `on_error = "stop"` : le traitement **s'arrête** à la première erreur.
+
+Pour un lot important, la valeur par défaut est généralement la plus pratique : un fichier défectueux ne bloque pas l'ensemble.
+
+## Ce que retourne la fonction
+
+Le résultat dépend de `output_dir` et de `output_format` :
+
+| Situation | Résultat |
+|:--|:----|
+| `output_format = "parsed"`, sans `output_dir` | **Un seul tableau** regroupant les résultats de tous les fichiers (colonne `source_file` pour les distinguer). Les fichiers en erreur en sont absents. Si aucun fichier n'a abouti, la fonction retourne `NULL`. |
+| `output_format = "raw"`, sans `output_dir` | Une **liste** de XML bruts, nommée d'après les fichiers. Les fichiers en erreur y figurent avec la valeur `NA`. |
+| Avec `output_dir` | Les XML sont écrits dans le dossier ; la fonction retourne, de façon invisible, un vecteur de XML bruts (et non de chemins). |
+
+```{r gpfs-raw, eval = FALSE}
+# Obtenir une liste de XML bruts, un par fichier
+xmls <- grobid_process_files(
+  files         = pdfs,
+  service       = "processReferences",
+  output_format = "raw"
+)
+
+names(xmls)   # noms des fichiers traités
+```
+
+# `process_citation_file()` : traiter un fichier de références
+
+## Principe
+
+`process_citation_file()` est un **raccourci** pour le cas où vos références sont déjà dans un **fichier texte** (une référence par ligne). Elle fait trois choses :
+
+1.  lit le fichier et ignore les lignes vides ;
+2.  appelle `grobid_process_file()` avec le service `processCitationList` ;
+3.  retourne soit le XML, soit le tableau de références analysées.
+
+Elle est équivalente à appeler `grobid_process_file()` avec `service = "processCitationList"`, mais ne demande que le fichier.
+
+```{r pcf-signature, eval = FALSE}
+process_citation_file(
+  file,
+  params        = list(),
+  output_format = "parsed",
+  model_type    = .checkrefr_env$grobid_model_type,
+  verbose       = TRUE
+)
+```
+
+## Exemple avec `ref_test.txt`
+
+```{r pcf-example, eval = FALSE}
+chemin_ref <- system.file("extdata", "ref_test.txt", package = "CheckrefR")
+
+refs_grobid <- process_citation_file(chemin_ref)
+
+refs_grobid |>
+  select(ref_n, title, year, doi, parse_confidence) |>
+  head(6)
+```
+
+Le tableau retourné contient une ligne par référence reconnue, avec notamment :
+
+| Colonne | Contenu |
+|:--|:---|
+| `ref_n` | Numéro de la référence |
+| `raw_reference` | Texte d'origine de la ligne |
+| `title`, `authors`, `authors_list`, `year` | Métadonnées extraites |
+| `journal`, `publisher`, `volume`, `issue`, `pages` | Informations de publication |
+| `doi`, `pmid`, `url` | Identifiants |
+| `ref_type` | Type de document déduit |
+| `parse_confidence` | Indice de confiance de GROBID sur l'analyse |
+
+::: {.encadre}
+**Limites de ce raccourci.** `process_citation_file()` ne propose **pas** de choix du `mode` (local ou distant), ni de `output_dir`, ni de `user_agent` : elle utilise la configuration active du package. Si vous avez besoin de ces réglages, appelez directement `grobid_process_file()` avec `service = "processCitationList"`. Par ailleurs, la correspondance entre le texte d'origine et chaque référence se fait **par position** : si GROBID reconnaît un nombre de références différent du nombre de lignes, un avertissement signale que certaines `raw_reference` seront `NA`.
+:::
+
+# `parse_apa_text()` : extraire sans GROBID
+
+## Principe
+
+`parse_apa_text()` réalise la **même tâche** que `process_citation_file()` (transformer des références en texte libre en données structurées), mais **sans GROBID** : elle s'appuie sur des **expressions régulières**, c'est-à-dire des motifs de texte, adaptés au format **APA 7**. Elle fonctionne donc **hors ligne** et instantanément, mais uniquement pour des références bien formées dans ce format.
+
+```{r paa-signature, eval = FALSE}
+parse_apa_text(
+  input,
+  as_ref_df         = FALSE,
+  source_file_label = "APA_Input"
+)
+```
+
+L'argument `input` accepte trois types d'entrées : un **vecteur de références**, le **chemin d'un fichier `.txt`**, ou un tableau à **une seule colonne**.
+
+## Exemple avec `ref_test.txt`
+
+```{r paa-example, eval = TRUE}
+chemin_ref <- system.file("extdata", "ref_test.txt", package = "CheckrefR")
+
+apa <- parse_apa_text(chemin_ref)
+
+apa |>
+  select(title, doi, publication_year, authorships) |>
+  head(6) |>
+  kable_site(caption = "Références extraites par parse_apa_text()")
+```
+
+## Deux formats de sortie : `as_ref_df`
+
+| `as_ref_df` | Colonnes retournées | Usage |
+|:--|:------|:---|
+| `FALSE` (par défaut) | `raw_reference`, `title`, `doi`, `publication_year`, `authorships`, `authorships_list` | Inspecter ce que l'extraction a reconnu |
+| `TRUE` | `raw_reference`, `source_file`, `ref_n`, `title`, `doi`, `year`, `authors`, `authors_list` | **Format prêt pour `validate_references()`** |
+
+Avec `as_ref_df = TRUE`, la fonction applique `format_apa_for_validation()`, qui renomme et complète les colonnes (numéro de référence, nom de source indiqué par `source_file_label`). La sortie peut alors être transmise directement à la validation.
+
+```{r paa-as-ref-df, eval = TRUE}
+refs_apa <- parse_apa_text(chemin_ref, as_ref_df = TRUE)
+
+refs_apa |>
+  select(ref_n, title, year, doi) |>
+  head(6) |>
+  kable_site(caption = "Format prêt pour la validation (as_ref_df = TRUE)")
+```
+
+## Comment la fonction lit une référence
+
+La fonction repère, dans cet ordre, les éléments suivants :
+
+| Élément | Règle appliquée |
+|:--|:------|
+| **DOI** | Un lien `https://doi.org/...` **en fin de référence** |
+| **Année** | La première année entre parenthèses, par exemple `(2020)` ou `(2020a)` |
+| **Titre** | Le texte qui suit l'année, **jusqu'au premier point** |
+| **Auteurs** | Les motifs de type `Nom, Initiales` situés avant l'année (séparés par des virgules ou `&`) |
+
+::: {.encadre}
+**Limites de l'extraction par expressions régulières.**
+
+-   **DOI** : seul un DOI écrit sous forme de **lien complet en fin de référence** est reconnu. Un DOI écrit autrement (`doi:10...`) ou placé ailleurs est ignoré.
+-   **Titre** : la fin du titre est détectée au **premier point**. Un titre contenant un point (abréviation, numéro) sera **tronqué**.
+-   **Auteurs** : seules les formes `Nom, Initiales` sont reconnues, sous la forme prénom abrégé. Un prénom complet ou un ordre inhabituel peut ne pas être reconnu.
+-   **Format** : la fonction suppose des références **APA 7 correctement formées**. Les références mal formatées, ou produites dans un autre style, donneront des champs manquants ou erronés.
+
+Ces limites en font un outil **rapide mais strict** : pour des références hétérogènes ou imparfaites, `process_citation_file()` (via GROBID) est généralement plus tolérant.
+:::
+
+# Choisir la bonne fonction
+
+| Votre situation | Fonction recommandée |
+|:--|:---|
+| Un PDF, on veut ses références | `grobid_process_file()` avec `service = "processReferences"` |
+| Un PDF, on veut son texte, ses sections | `grobid_process_file()` avec `service = "processFulltextDocument"` |
+| Un PDF, on veut ses métadonnées | `grobid_process_file()` avec `service = "processHeaderDocument"` |
+| Plusieurs PDF | `grobid_process_files()` |
+| Un fichier texte de références (formats variés) | `process_citation_file()` |
+| Un fichier texte de références en APA 7, sans serveur | `parse_apa_text()` |
+| Un XML déjà obtenu à convertir | `parse_fulltext()`, `parse_header()`, `parse_references()` ou `parse_citation_list()` |
+
+Quelle que soit la voie choisie, la sortie « parsed » ou `parse_apa_text(as_ref_df = TRUE)` peut être transmise à `validate_references()`, présentée dans la page « Reference Validation Pipeline and Scoring ».
+
+

@@ -1,0 +1,40 @@
+Package: CheckrefR
+Title: Parse Scientific Documents and Validate Citations with 'GROBID'
+Version: 0.0.0.1
+Authors@R: 
+    person("Maxime", "Jollivet", , "maximejollivet@gmail.com", role = c("aut", "cre"))
+Description: CheckrefR provides a seamless interface for GROBID, enabling the extraction of metadata, full text and bibliographic references from scientific documents. The package automates infrastructure management via Docker or remote servers and offers tools for validating citations via OpenAlex and DOI services.
+License: GPL-3 + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Suggests: 
+    testthat (>= 3.1.7),
+    withr,
+    covr,
+    knitr,
+    mockery,
+    rmarkdown
+Imports: 
+    cli,
+    curl,
+    dplyr,
+    future,
+    future.apply,
+    glue,
+    httr2,
+    jsonlite,
+    stringi,
+    parallel,
+    pbapply,
+    processx,
+    readr,
+    stringdist,
+    tibble,
+    tools,
+    utils,
+    xml2
+Config/testthat/edition: 3
+VignetteBuilder: knitr
+Depends: 
+    R (>= 3.5)

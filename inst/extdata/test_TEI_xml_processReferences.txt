@@ -1,0 +1,1351 @@
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" 
+ xmlns:mml="http://www.w3.org/1998/Math/MathML">
+	<teiHeader/>
+	<text>
+		<front/>
+		<body/>
+		<back>
+			<div>
+				<listBibl>
+<biblStruct status="extracted" xml:id="b0">
+	<analytic>
+		<title level="a" type="main">A novel coronavirus emerging in China-key questions for impact assessment</title>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">J</forename><surname>Munster</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Koopmans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Van Doremalen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Van Riel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wit</forename><forename type="middle">E</forename><surname>De</surname></persName>
+		</author>
+		<idno type="DOI">10.1056/NEJMp2000929</idno>
+	</analytic>
+	<monogr>
+		<title level="j">N Engl J Med</title>
+		<imprint>
+			<biblScope unit="volume">382</biblScope>
+			<biblScope unit="page" from="692" to="694" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b1">
+	<analytic>
+		<title level="a" type="main">How statistics of world health index react against COVID-19</title>
+		<author>
+			<persName><forename type="first">V</forename><surname>Tomer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Gupta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Manwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">P</forename><surname>Singh</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.matpr.2021.03.486</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Mater Today Proc</title>
+		<imprint>
+			<biblScope unit="volume">46</biblScope>
+			<biblScope unit="page" from="11267" to="11273" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b2">
+	<analytic>
+		<title level="a" type="main">Drugs, devices, and the FDA: part 1: an overview of approval processes for drugs</title>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">A</forename><surname>Van Norman</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.jacbts.2016.03.002</idno>
+	</analytic>
+	<monogr>
+		<title level="j">JACC: Basic Transl Sci</title>
+		<imprint>
+			<biblScope unit="volume">1</biblScope>
+			<biblScope unit="page" from="170" to="179" />
+			<date type="published" when="2016">2016</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b3">
+	<analytic>
+		<title level="a" type="main">A network medicine approach to investigation and populationbased validation of disease manifestations and drug repurposing for COVID-19</title>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Zhou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Y</forename><surname>Hou</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Shen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Mehra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kallianpur</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Culver</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">U</forename><surname>Gack</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Farha</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Zein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Comhair</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Fiocchi</surname></persName>
+		</author>
+		<idno type="DOI">10.1371/journal.pbio.3000970</idno>
+	</analytic>
+	<monogr>
+		<title level="j">PLoS Biol</title>
+		<imprint>
+			<biblScope unit="volume">18</biblScope>
+			<biblScope unit="page">3000970</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b4">
+	<analytic>
+		<title level="a" type="main">Chloroquine and hydroxychloroquine as available weapons to fight COVID-19</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Colson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">M</forename><surname>Rolain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Lagier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Brouqui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Raoult</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.ijantimicag.2020.105932</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Int J Antimicrob Agents</title>
+		<imprint>
+			<biblScope unit="volume">55</biblScope>
+			<biblScope unit="page">105932</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Ivermectin as a potential drug for treatment of COVID-19: an in-sync review with clinical and computational attributes</title>
+		<author>
+			<persName><forename type="first">H</forename><surname>Kaur</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Shekhar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Sharma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Sarma</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Prakash</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Medhi</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s43440-020-00195-y</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Pharmacol Rep</title>
+		<imprint>
+			<biblScope unit="volume">73</biblScope>
+			<biblScope unit="page" from="736" to="749" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b6">
+	<analytic>
+		<title level="a" type="main">The FDA-approved drug ivermectin inhibits the replication of SARS-CoV-2 in vitro</title>
+		<author>
+			<persName><forename type="first">L</forename><surname>Caly</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Druce</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">G</forename><surname>Catton</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Jans</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">M</forename><surname>Wagstaff</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.antiviral.2020.104787</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Antiviral Res</title>
+		<imprint>
+			<biblScope unit="volume">178</biblScope>
+			<biblScope unit="page">104787</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b7">
+	<analytic>
+		<title level="a" type="main">Ivermectin-old drug, new tricks?</title>
+		<author>
+			<persName><forename type="first">R</forename><surname>Laing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Gillan</forename><forename type="middle">V</forename><surname>Devaney</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename></persName>
+		</author>
+		<idno type="DOI">10.1016/j.pt.2017.02.004</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Trends Parasitol</title>
+		<imprint>
+			<biblScope unit="volume">33</biblScope>
+			<biblScope unit="page" from="463" to="472" />
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Colchicine for the treatment of COVID-19 patients: efficacy, safety, and model informed dosage regimens</title>
+		<author>
+			<persName><forename type="first">E</forename><surname>Karatza</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Ismailos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Karalis</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/00498254.2021.1909782</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Xenobiotica</title>
+		<imprint>
+			<biblScope unit="volume">51</biblScope>
+			<biblScope unit="page" from="643" to="656" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b9">
+	<analytic>
+		<title level="a" type="main">Colchicine in COVID-19: an old drug, new use</title>
+		<author>
+			<persName><forename type="first">N</forename><surname>Schlesinger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">L</forename><surname>Firestein</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Brunetti</surname></persName>
+		</author>
+		<idno type="DOI">10.1007/s40495-020-00225-6</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Curr Pharmacol Rep</title>
+		<imprint>
+			<biblScope unit="volume">6</biblScope>
+			<biblScope unit="page" from="137" to="145" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b10">
+	<analytic>
+		<title level="a" type="main">A COVID-19 prophylaxis? Lower incidence associated with prophylactic administration of ivermectin</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">D</forename><surname>Hellwig</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Maia</forename><forename type="middle">A</forename></persName>
+		</author>
+		<idno type="DOI">10.1016/j.ijantimicag.2020.106248</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Int J Antimicrob Agents</title>
+		<imprint>
+			<biblScope unit="volume">57</biblScope>
+			<biblScope unit="page">106248</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b11">
+	<analytic>
+		<title level="a" type="main">Ivermectin treatment may improve the prognosis of patients with COVID-19</title>
+		<author>
+			<persName><forename type="first">Msi</forename><surname>Khan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Msi</forename><surname>Khan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Debnath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">N</forename><surname>Nath</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Al</forename><surname>Mahtab</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Nabeka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><surname>Akbar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Smf</forename></persName>
+		</author>
+		<idno type="DOI">10.1016/j.arbres.2020.08.007</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Arch Bronconeumol</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="page">828</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b12">
+	<analytic>
+		<title level="a" type="main">A case control study to evaluate the impact of colchicine on patients admitted to the hospital with moderate to severe COVID-19 infection</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Sandhu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tieng</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Chilimuri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Franchin</surname></persName>
+		</author>
+		<idno type="DOI">10.1155/2020/8865954</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Can J Infect Dis Med Microbiol</title>
+		<imprint>
+			<biblScope unit="page">8865954</biblScope>
+			<date type="published" when="2020">2020. 2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b13">
+	<analytic>
+		<title level="a" type="main">Discharge criteria for patients with COVID-19 to long-term care facilities requires modification</title>
+		<author>
+			<persName><forename type="first">W</forename><surname>Teranaka</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Pan</surname></persName>
+		</author>
+		<idno type="DOI">10.7861/clinmed.Let.21.1.2</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Clin Med</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page" from="116" to="e117" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b14">
+	<analytic>
+		<title level="a" type="main">Hydroxychloroquine and azithromycin as a treatment of COVID-19: results of an open-label non-randomized clinical trial</title>
+		<author>
+			<persName><forename type="first">P</forename><surname>Gautret</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Lagier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Parola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Meddeb</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Mailhe</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Doudier</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Courjon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><surname>Giordanengo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">E</forename><surname>Vieira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">H</forename><forename type="middle">T</forename><surname>Dupont</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Honoré</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.ijantimicag.2020.105949</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Int J Antimicrob Agents</title>
+		<imprint>
+			<biblScope unit="volume">56</biblScope>
+			<biblScope unit="page">105949</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b15">
+	<analytic>
+		<title level="a" type="main">Treatment with hydroxychloroquine, azithromycin, and combination in patients hospitalized with COVID-19</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Arshad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Kilgore</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Z</forename><forename type="middle">S</forename><surname>Chaudhry</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Jacobsen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">D</forename><surname>Wang</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Huitsing</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Brar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">J</forename><surname>Alangaden</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Ramesh</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">E</forename><surname>Mckinnon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O'</forename><surname>Neill</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename></persName>
+		</author>
+		<idno type="DOI">10.1016/j.ijid.2020.06.099</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Int J Infect Dis</title>
+		<imprint>
+			<biblScope unit="volume">97</biblScope>
+			<biblScope unit="page" from="396" to="403" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b16">
+	<analytic>
+		<title level="a" type="main">Effect of high vs low doses of chloroquine diphosphate as adjunctive therapy for patients hospitalized with severe acute respiratory syndrome coronavirus 2 (SARS-CoV-2) infection: a randomized clinical trial</title>
+		<author>
+			<persName><forename type="first">Mgs</forename><surname>Borba</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ffa</forename><surname>Val</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">V</forename><forename type="middle">S</forename><surname>Sampaio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Maa</forename><surname>Alexandre</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">C</forename><surname>Melo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mjd</forename><surname>Brito</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Baía-Da-Silva</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mvf</forename><surname>Guerra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">A</forename><surname>Hajjar</surname></persName>
+		</author>
+		<idno type="DOI">10.1001/jamanetworkopen.2020.8857</idno>
+	</analytic>
+	<monogr>
+		<title level="j">JAMA Netw Open</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<biblScope unit="page" from="208857" to="e208857" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b17">
+	<analytic>
+		<title level="a" type="main">Hydroxychloroquine with azithromycin in patients hospitalized for mild and moderate COVID-19</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">B</forename><surname>Lamback</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mad</forename><surname>Oliveira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">F</forename><surname>Haddad</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Afm</forename><surname>Vieira</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ferreira</forename><surname>Neto</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">L</forename><surname>Maia</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Tds</forename><surname>Chrisman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Jdr</forename><surname>Spineti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ppdm</forename><surname>Mattos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Mad</forename><surname>Costa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename></persName>
+		</author>
+		<idno type="DOI">10.1016/j.bjid.2021.101549</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Braz J Infect Dis</title>
+		<imprint>
+			<biblScope unit="volume">25</biblScope>
+			<biblScope unit="page">101549</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b18">
+	<monogr>
+		<title level="m" type="main">Efficacy of ivermectin in COVID-19 patients with mild to moderate disease</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">H</forename><surname>Shah Bukhari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Asghar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Perveen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Hayat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">A</forename><surname>Mangat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">R</forename><surname>Butt</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Abdullah</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Fatima</forename><forename type="middle">T</forename><surname>Mustafa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Iqbal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename></persName>
+		</author>
+		<idno type="DOI">10.1101/2021.02.02.21250840</idno>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b19">
+	<analytic>
+		<title level="a" type="main">A five-day course of ivermectin for the treatment of COVID-19 may reduce the duration of illness</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ahmed</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">M</forename><surname>Karim</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">G</forename><surname>Ross</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Hossain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">D</forename><surname>Clemens</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">K</forename><surname>Sumiya</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">S</forename><surname>Phru</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rahman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Zaman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Somani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Yasmin</forename><forename type="middle">R</forename></persName>
+		</author>
+		<idno type="DOI">10.1016/j.ijid.2020.11.191</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Int J Infect Dis</title>
+		<imprint>
+			<biblScope unit="volume">103</biblScope>
+			<biblScope unit="page" from="214" to="216" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b20">
+	<analytic>
+		<title level="a" type="main">Ivermectin shows clinical benefits in mild to moderate COVID19: a randomized controlled double-blind, dose-response study in Lagos</title>
+		<author>
+			<persName><forename type="first">O</forename><forename type="middle">E</forename><surname>Babalola</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">O</forename><surname>Bode</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">A</forename><surname>Ajayi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><forename type="middle">M</forename><surname>Alakaloko</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">E</forename><surname>Akase</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><surname>Otrofanowei</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><forename type="middle">B</forename><surname>Salu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">W</forename><forename type="middle">L</forename><surname>Adeyemo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">O</forename><surname>Ademuyiwa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Omilabu</surname></persName>
+		</author>
+		<idno type="DOI">10.1093/qjmed/hcab035</idno>
+	</analytic>
+	<monogr>
+		<title level="j">QJM</title>
+		<imprint>
+			<biblScope unit="volume">114</biblScope>
+			<biblScope unit="page" from="780" to="788" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b21">
+	<analytic>
+		<title level="a" type="main">The effect of early treatment with ivermectin on viral load, symptoms and humoral response in patients with non-severe COVID-19: a pilot, double-blind, placebocontrolled, randomized clinical trial</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chaccour</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Casellas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Blanco-Di Matteo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Pineda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Fernandez-Montero</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Ruiz-Castillo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Richardson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Rodríguez-Mateos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Jordán-Iborra</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Brew</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Carmona-Torre</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.eclinm.2020.100720</idno>
+	</analytic>
+	<monogr>
+		<title level="j">EClinicalMedicine</title>
+		<imprint>
+			<biblScope unit="volume">32</biblScope>
+			<biblScope unit="page">100720</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b22">
+	<analytic>
+		<title level="a" type="main">Antiviral effect of high-dose ivermectin in adults with COVID-19: a proof-ofconcept randomized trial</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Krolewiecki</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Lifschitz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Moragas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Travacio</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Valentini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">F</forename><surname>Alonso</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Solari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename><surname>Tinelli</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">O</forename><surname>Cimino</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Álvarez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">E</forename><surname>Fleitas</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.eclinm.2021.100959</idno>
+	</analytic>
+	<monogr>
+		<title level="j">EClinicalMedicine</title>
+		<imprint>
+			<biblScope unit="volume">37</biblScope>
+			<biblScope unit="page">100959</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b23">
+	<analytic>
+		<title level="a" type="main">Ivermectin as a potential treatment for mild to moderate COVID-19-a double blind randomized placebocontrolled trial Trial in Eastern India</title>
+		<author>
+			<persName><forename type="first">Roy</forename><surname>Ravikirti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Pattadar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Raj</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Agarwal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Biswas</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Majhi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">K</forename><surname>Rai</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">K</forename><surname>Shyama</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Kumar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Sarfaraz</surname></persName>
+		</author>
+		<idno type="DOI">10.18433/jpps32105</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Pharmacy and Pharmaceutical Sciences</title>
+		<imprint>
+			<biblScope unit="volume">24</biblScope>
+			<biblScope unit="page" from="343" to="350" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b24">
+	<analytic>
+		<title level="a" type="main">Ivermectin to prevent hospitalizations in patients with COVID-19 (IVERCOR-COVID19) a randomized, double-blind, placebo-controlled trial</title>
+		<author>
+			<persName><forename type="first">J</forename><surname>Vallejos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Zoni</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bangher</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Villamandos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bobadilla</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Plano</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">G</forename><surname>Aguirre</surname></persName>
+		</author>
+		<idno type="DOI">10.1186/s12879-021-06348-5</idno>
+	</analytic>
+	<monogr>
+		<title level="j">BMC Infect Dis</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="page">635</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b25">
+	<analytic>
+		<title level="a" type="main">Ivermectin in mild and moderate COVID-19 (RIVET-COV): a randomized, placebo-controlled trial</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Mohan</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Tiwari</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Suri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Mittal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Patel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Jain</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><forename type="middle">K</forename><surname>Das</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><forename type="middle">K</forename><surname>Bopanna</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Pandey</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Shelke</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">R</forename><surname>Singh</surname></persName>
+		</author>
+		<idno type="DOI">10.21203/rs.3.rs-191648/v1</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Research Square</title>
+		<imprint>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b26">
+	<analytic>
+		<title level="a" type="main">Clinical study evaluating the efficacy of ivermectin in COVID-19 treatment: a randomized controlled study</title>
+		<author>
+			<persName><forename type="first">S</forename><surname>Abd-Elsalam</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">A</forename><surname>Noor</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Badawi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Khalaf</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">S</forename><surname>Esmail</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Soliman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Abd</forename><forename type="middle">El</forename><surname>Ghafar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Elbahnasawy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Moustafa</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">F</forename><surname>Hassany</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Medhat</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">A</forename></persName>
+		</author>
+		<idno type="DOI">10.1002/jmv.27122</idno>
+	</analytic>
+	<monogr>
+		<title level="j">J Med Virol</title>
+		<imprint>
+			<biblScope unit="volume">93</biblScope>
+			<biblScope unit="page" from="5833" to="5838" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b27">
+	<analytic>
+		<title level="a" type="main">Outcome of ivermectin treated mild to moderate COVID-19 cases: a single-centre, open-label, randomised controlled study</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">S</forename><surname>Podder</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Chowdhury</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">I</forename><surname>Sina</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Wmmu</forename><surname>Haque</surname></persName>
+		</author>
+		<idno type="DOI">10.3329/imcjms.v14i2.52826</idno>
+	</analytic>
+	<monogr>
+		<title level="j">IMC J Med Sci</title>
+		<imprint>
+			<biblScope unit="volume">14</biblScope>
+			<biblScope unit="page" from="11" to="18" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b28">
+	<analytic>
+		<title level="a" type="main">Ivermectin as a potential COVID-19 treatment from the pharmacokinetic point of view: antiviral levels are not likely attainable with known dosing regimens</title>
+		<author>
+			<persName><forename type="first">G</forename><surname>Momekov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Momekova</surname></persName>
+		</author>
+		<idno type="DOI">10.1080/13102818.2020.1775118</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Biotechnology and Biotechnological Equipment</title>
+		<imprint>
+			<biblScope unit="volume">34</biblScope>
+			<biblScope unit="page" from="469" to="474" />
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b29">
+	<analytic>
+		<title level="a" type="main">Ivermectin and COVID-19: keeping rigor in times of urgency</title>
+		<author>
+			<persName><forename type="first">C</forename><surname>Chaccour</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">F</forename><surname>Hammann</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Ramón-García</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">R</forename><surname>Rabinovich</surname></persName>
+		</author>
+		<idno type="DOI">10.4269/ajtmh.20-0271</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Am J Trop Med Hyg</title>
+		<imprint>
+			<biblScope unit="volume">102</biblScope>
+			<biblScope unit="page">1156</biblScope>
+			<date type="published" when="2020">2020</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b30">
+	<analytic>
+		<title level="a" type="main">Colchicine for community-treated patients with COVID-19 (COLCORONA): a phase 3, randomised, double-blinded, adaptive, placebo-controlled, multicentre trial</title>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">C</forename><surname>Tardif</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Bouabdallaoui</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Pl</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Gaudet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><surname>Shah</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">H</forename><surname>Pillinger</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Lopez-Sendon</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Da Luz</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Verret</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Audet</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dupuis</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/S2213-2600</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Lancet Resp Med</title>
+		<imprint>
+			<biblScope unit="volume">9</biblScope>
+			<biblScope unit="issue">21</biblScope>
+			<biblScope unit="page" from="222" to="228" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b31">
+	<analytic>
+		<title level="a" type="main">ESCMID COVID-19 living guidelines: drug treatment and clinical management</title>
+		<author>
+			<persName><forename type="first">M</forename><surname>Bartoletti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Azap</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Barac</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Bussini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">O</forename><surname>Ergonul</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><surname>Krause</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><forename type="middle">R</forename><surname>Paño-Pardo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">R</forename><surname>Power</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><surname>Sibani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">G</forename><surname>Szabo</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Tsiodras</surname></persName>
+		</author>
+		<idno type="DOI">10.1016/j.cmi.2021.11.007</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Clin Microbiol Infect</title>
+		<imprint>
+			<biblScope unit="volume">28</biblScope>
+			<biblScope unit="page" from="222" to="238" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b32">
+	<analytic>
+		<title level="a" type="main">Effect of colchicine vs standard care on cardiac and inflammatory biomarkers and clinical outcomes in patients hospitalized with coronavirus disease 2019: the GRECCO-19 randomized clinical trial</title>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">G</forename><surname>Deftereos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Giannopoulos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><forename type="middle">A</forename><surname>Vrachatis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><forename type="middle">D</forename><surname>Siasos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">G</forename><surname>Giotaki</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Gargalianos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Metallidis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Sianos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><surname>Baltagiannis</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Panagopoulos</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Dolianitis</surname></persName>
+		</author>
+		<idno type="DOI">10.1001/jamanetworkopen.2020.13136</idno>
+	</analytic>
+	<monogr>
+		<title level="j">JAMA Netw Open</title>
+		<imprint>
+			<biblScope unit="volume">3</biblScope>
+			<date type="published" when="2020">2020. 2013136. 2013136</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b33">
+	<analytic>
+		<title level="a" type="main">Beneficial effects of colchicine for moderate to severe COVID-19: a randomised, double-blinded, placebo-controlled clinical trial</title>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">I</forename><surname>Lopes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">P</forename><surname>Bonjorno</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">C</forename><surname>Giannini</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><forename type="middle">B</forename><surname>Amaral</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">I</forename><surname>Menezes</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">M</forename><surname>Dib</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">S</forename><forename type="middle">L</forename><surname>Gigante</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">N</forename><surname>Benatti</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">U</forename><forename type="middle">C</forename><surname>Rezek</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">L</forename><surname>Emrich-Filho</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">B</forename><forename type="middle">A</forename><surname>Sousa</surname></persName>
+		</author>
+		<idno type="DOI">10.1136/rmdopen-2020-001455</idno>
+	</analytic>
+	<monogr>
+		<title level="j">RMD Open</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page">1455</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b34">
+	<analytic>
+		<title level="a" type="main">Efficacy and safety of colchicine in COVID-19: a meta-analysis of randomised controlled trials</title>
+		<author>
+			<persName><forename type="first">K</forename><forename type="middle">G</forename><surname>Mehta</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">T</forename><surname>Patel</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><forename type="middle">D</forename><surname>Chavda</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Patel</surname></persName>
+		</author>
+		<idno type="DOI">10.1136/rmdopen-2021-001746</idno>
+	</analytic>
+	<monogr>
+		<title level="j">RMD Open</title>
+		<imprint>
+			<biblScope unit="volume">7</biblScope>
+			<biblScope unit="page">1746</biblScope>
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b35">
+	<analytic>
+		<title level="a" type="main">Impact of colchicine on mortality and morbidity in COVID-19: a systematic review</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Sanghavi</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename><surname>Bansal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><forename type="middle">P</forename><surname>Kaur</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">S</forename><surname>Mughal</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><surname>Keshavamurthy</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Cusick</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Schram</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Sns</forename><surname>Yarrarapu</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">R</forename><surname>Giri</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Kaur</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Moreno</forename><surname>Franco</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">P</forename></persName>
+		</author>
+		<idno type="DOI">10.1080/07853890.2021.1993327</idno>
+	</analytic>
+	<monogr>
+		<title level="j">Ann Med</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="page" from="775" to="789" />
+			<date type="published" when="2022">2022</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>
+

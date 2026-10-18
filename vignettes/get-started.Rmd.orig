@@ -1,0 +1,542 @@
+---
+title: "Get started"
+output:
+  rmarkdown::html_vignette:
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Get started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{css, echo=FALSE}
+.encadre {
+  border: 2px solid #31708f;
+  border-radius: 6px;
+  padding: 10px 15px;
+  margin: 15px 0;
+  background-color: #f9fcfe;
+}
+
+table.table caption {
+  caption-side: top;
+}
+
+
+details.refs-test {
+  border: 2px solid #31708f;
+  border-radius: 6px;
+  margin: 15px 0;
+  background-color: #f9fcfe;
+}
+
+details.refs-test > summary {
+  cursor: pointer;
+  padding: 10px 15px;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #31708f;
+  border-radius: 4px;
+  list-style: none;
+}
+
+details.refs-test > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.refs-test > summary::before {
+  content: "▶ ";
+}
+
+details.refs-test[open] > summary::before {
+  content: "▼ ";
+}
+
+details.refs-test > summary:hover {
+  background-color: #285a75;
+}
+
+details.refs-test > .refs-contenu {
+  padding: 5px 20px 15px 20px;
+}
+
+```
+
+```{r setup-options, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+
+# Folder where precomputed results are stored (copied along with the vignette)
+cache_dir <- "cache_get-started"
+dir.create(cache_dir, showWarnings = FALSE, recursive = TRUE)
+
+cache_file <- function(name) file.path(cache_dir, paste0(name, ".rds"))
+```
+
+```{r setup-packages, include = FALSE}
+library(CheckrefR)
+library(dplyr)
+library(knitr)
+library(kableExtra)
+```
+
+```{r setup-helper-table, include = FALSE}
+# Helper function: consistent formatting of the site's tables
+kable_site <- function(x, caption = NULL, ...) {
+  x |>
+    kbl(caption = caption, booktabs = TRUE, ...) |>
+    kable_styling(
+      bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+      full_width = FALSE,
+      font_size = 13,
+      html_font = NULL
+    ) |>
+    row_spec(0, extra_css = "")  # optional
+}
+```
+
+<img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental" />
+
+# Introduction
+
+## Goals of CheckrefR
+
+**CheckrefR** pursues two complementary goals.
+
+### An R client for GROBID
+
+[GROBID](https://github.com/kermitt2/grobid) (*GeneRation Of BIbliographic Data*) is a machine learning model able to read a document (typically a PDF of a scientific article) or a list of raw references, and to extract **structured** information from it: title, authors, year, journal, DOI, etc.
+
+GROBID works as a **service**: a program that runs somewhere (on your computer or on a server) and to which you send files in order to get a result. CheckrefR plays the role of the **client**: it sends your files to the service, retrieves the response and turns it into R tables that are ready to use.
+
+Two usage modes are available:
+
+| Mode | Principle | When to use it? |
+|:--|:--|:--|
+| **Local** (`"docker"`) | GROBID runs on *your* machine, in a Docker container (an isolated "box" that bundles the program). | **Recommended**: fast, private, no volume limit. |
+| **Remote** (`"remote"`) | Files are sent to a GROBID server accessible over the Internet. | Troubleshooting, first trials, or if you have your own server. |
+
+::: {.encadre}
+⚠️ **Keep in mind.** The remote servers configured by default in the package are **demonstration servers**: shared, sometimes unavailable or slow, and with no guarantee of confidentiality for your documents.
+
+It is preferable to **use GROBID locally** or to **have your own server**. The package lets you configure the server address (see `grobid_remote_connect()` below).
+:::
+
+The package also offers a route that is independent of GROBID: the `parse_apa_text()` function, based on **regular expressions**, which parses references in **APA 7 format**. Its output can then be validated with the same pipeline.
+
+### Verification of bibliographic references
+
+The second part of the package consists in **checking that bibliographic references really exist** and that they are correctly described. The references extracted by GROBID are compared against the open database [OpenAlex](https://openalex.org/) and/or against DOI resolution (`doi.org`).
+
+
+## Why verify? The context of generative AI
+
+CheckrefR was designed in particular with the context of **generative artificial intelligence (GenAI)** in mind. Large language models (LLMs) can produce bibliographies that look perfectly credible, but whose quality varies greatly. In general, one may encounter:
+
+-   **outright hallucinations**: the reference does not exist (invented title, authors and journal);
+-   **exact references**: the reference exists and all of its information is correct;
+-   **approximate references**: a real work, but with errors (year, authors, distorted title, incorrect journal);
+-   **hallucinated DOIs attached to a real reference**: the reference text matches a real article, but the DOI is wrong or points to another publication;
+-   the opposite: a **real DOI attached to an erroneous reference**;
+-   **ambiguous cases**, where the reference is *partially* correct and it is difficult to decide.
+
+This diversity is what makes it necessary to perform a verification that goes beyond a simple "the DOI exists / does not exist", and that compares all the elements (title, authors, year, DOI).
+
+::: {.encadre}
+⚠️ Warning: experimental version
+
+-   The current version of the package is **experimental**.
+-   The **computation of matching scores** (title, authors, year, global score) is currently the subject of more thorough work and preparation than the method presently implemented, which has **limitations**.
+-   More **formal tests** on this question will be carried out in the future.
+-   Statuses and scores should therefore be read as **decision aids** and not as a verdict: manual verification remains necessary, especially for ambiguous or partially correct cases.
+:::
+
+## Prerequisite: installing Docker (local mode)
+
+The local mode, recommended above, relies on **Docker**. This is software that runs programs in isolated "boxes" (*containers*), without installing anything else on your machine. GROBID is distributed in this form: Docker is therefore needed **only if you wish to use it locally**. Without Docker, the remote mode remains available (see the caveats above).
+
+::: {.encadre}
+🐳 Installing Docker according to your system
+
+-   **Windows**: install [Docker Desktop](https://www.docker.com/products/docker-desktop/). It relies on WSL 2, which the installer offers to enable. A restart may be requested.
+-   **macOS**: install [Docker Desktop](https://www.docker.com/products/docker-desktop/), choosing the version suited to your processor (Apple Silicon or Intel).
+-   **Linux**: install Docker Engine via your distribution's package manager (Debian/Ubuntu, Fedora/RHEL…), start the service, and add your user to the `docker` group to avoid using `sudo`.
+
+See the [official documentation](https://docs.docker.com/engine/install/).
+
+`grobid_check_requirements()` tells you whether it is detected, and `grobid_install_guide()` provides instructions adapted to your system (see below).
+:::
+
+# Getting GROBID up and running
+
+## Overview
+
+Getting started takes place in three steps:
+
+1.  **Diagnose** your environment: `grobid_check_requirements()`;
+2.  **Install** if necessary, with an interactive guide: `grobid_install_guide()`;
+3.  **Start GROBID**, locally with `grobid_docker_start()` or by connecting to a remote server with `grobid_remote_connect()`.
+
+Once GROBID is available, documents are processed with `grobid_process_file()` and `grobid_process_files()` (next section).
+
+## Step 1: check your environment with `grobid_check_requirements()`
+
+This function diagnoses your system: operating system, Internet access, presence and state of Docker, any active GROBID container, and accessibility of the default remote servers. It then recommends a usage mode.
+
+```{r requirements-check, message=TRUE}
+req <- grobid_check_requirements()
+```
+
+The result is also returned (invisibly) as a list:
+
+```{r requirements-recommended-mode}
+req$recommended_mode
+```
+
+The recommended value is `"docker"` if Docker is installed, and `"remote"` if Docker is absent but a remote server responds.
+
+| Argument | Role |
+|:--|:--|
+| `check_docker` | Checks Docker and any active GROBID container. |
+| `check_remote` | Tests the default remote servers. |
+| `test_all_urls` | `TRUE`: tests all addresses; `FALSE`: stops at the first one that responds (faster). |
+| `verbose` | Displays (or not) the diagnosis in the console. |
+
+```{r requirements-quiet, eval = FALSE}
+# Silent diagnosis, without testing Docker
+req <- grobid_check_requirements(verbose = FALSE, check_docker = FALSE)
+req$recommended_mode
+```
+
+## Step 2: get guided through installation with `grobid_install_guide()`
+
+If Docker is not installed, `grobid_install_guide()` displays a **step-by-step guide adapted to your system**, then invites you to rerun the diagnosis. It is the interactive version of the box in the previous section.
+
+```{r install-guide, message=TRUE}
+# Uses the previous diagnosis (otherwise, it is rerun automatically)
+grobid_install_guide(requirements = req)
+```
+
+## Step 3: start GROBID
+
+Two options, depending on the chosen mode.
+
+### Local mode: `grobid_docker_start()`
+
+This function launches GROBID in a Docker container on your machine.
+
+```{r docker-start-default2, eval = FALSE}
+grobid_docker_start()
+```
+
+::: {.encadre}
+**First launch: downloading the image.** The first time, the GROBID model *image* (the "package" containing the program and its models) has to be downloaded to your machine, which can **take a while** (several GB). This is also the case **for each new model or new version** that has not yet been downloaded. Subsequent launches are much faster.
+:::
+
+Available settings:
+
+| Argument | Role | Default value |
+|:--|:--|:--|
+| `model_type` | Model used: `"crf"` (lightweight) or `"full"` (deep learning, more accurate but heavier) | not set (standard image) |
+| `grobid_version` | GROBID version | `"0.9.0"` |
+| `port` | Local port on which the service is exposed | `8070` |
+| `max_ram` | Maximum memory allocated (e.g. `"4g"`, `"8g"`) | `"4g"` |
+| `pull` | Forces download/update of the image | `FALSE` |
+| `timeout_ready` | Maximum waiting time before GROBID is ready | 120 s |
+| `docker_image` | Base name of the Docker image | `"lfoppiano/grobid:"` |
+| `verbose` | Progress messages | `TRUE` |
+
+```{r docker-start-custom2, eval = FALSE}
+# Full model, more memory, custom port
+grobid_docker_start(model_type = "full", max_ram = "8g", port = 8080)
+
+# Another GROBID version
+grobid_docker_start(grobid_version = "0.8.1")
+```
+
+If a compatible container (same image, version, model and port) is already active, it is simply reused; otherwise, it is replaced.
+
+### Remote mode: `grobid_remote_connect()`
+
+This function tests and then stores a remote GROBID server for the current R session.
+
+```{r remote-connect-default2, eval = FALSE}
+# Default demonstration servers (crf model)
+grobid_remote_connect()
+```
+
+| Argument | Role |
+|---|-------|
+| `url` | Address of **your own** GROBID server. If provided, `model_type` is ignored. |
+| `model_type` | `"crf"` or `"full"`: chooses among the default demonstration servers. |
+| `timeout` | Maximum connection delay (120 s by default). |
+| `verbose` | Progress messages. |
+
+```{r remote-connect-custom2, eval = FALSE}
+# Your own server (recommended if you do not use Docker)
+grobid_remote_connect(url = "https://mon-serveur-grobid.exemple.org")
+
+# Demonstration servers, "full" model
+grobid_remote_connect(model_type = "full")
+```
+
+::: {.encadre}
+**Reminder.** The default servers are **demonstration** servers: avoid sending sensitive or large documents to them.
+:::
+
+### These two functions are optional
+
+**You can skip this step 3.** `grobid_docker_start()` and `grobid_remote_connect()` are useful for **fine-tuning** the configuration (memory, port, version, personal server), but calling them manually is not required.
+
+The processing functions `grobid_process_file()` and `grobid_process_files()` call them on their own: you only need to specify the `mode` (`"docker"` or `"remote"`) and the `model_type` (`"crf"` or `"full"`). If the server is not already active, it is then started or reached automatically.
+
+# Processing documents with GROBID
+
+## The `grobid_process_file()` and `grobid_process_files()` functions
+
+-   `grobid_process_file()` processes **a single** file;
+-   `grobid_process_files()` processes **several** files (optionally in parallel) and gathers the results into a single table.
+
+**Main parameters:**
+
+| Argument | Role |
+|---|--------|
+| `file` / `files` | Path(s) of the file(s) to process. |
+| `service` | Type of GROBID processing (see below). |
+| `params` | Additional options passed to GROBID, e.g. `list(consolidateCitations = 1)`. |
+| `output_format` | `"parsed"` (R table, default) or `"raw"` (raw XML). |
+| `output_dir` | Folder where XML files are saved (optional). |
+| `mode` | `"docker"` or `"remote"`: **automatically starts or connects** the server if necessary. |
+| `model_type` | `"crf"` or `"full"`: model used. |
+| `parallel`, `n_workers` | *(`grobid_process_files()`)* parallel processing. |
+| `on_error` | *(`grobid_process_files()`)* `"warn"` (continues) or `"stop"`. |
+
+**Available services:**
+
+| `service` | Input | Extracted content |
+|:--|:--|:--|
+| `"processFulltextDocument"` | PDF | Structured full text and references |
+| `"processHeaderDocument"` | PDF | Header (title, authors, abstract…) |
+| `"processReferences"` | PDF | List of bibliographic references |
+| `"processCitationList"` | `.txt` file or vector of texts | Parsing of raw references (one per line) |
+
+## Illustration with the example file `ref_test.txt`
+
+The package provides a test file in its `extdata` folder. It contains a list of raw references, which can be processed with the `"processCitationList"` service.
+
+```{r example-locate-file}
+txt_file <- system.file("extdata", package = "CheckrefR") |>
+  list.files(pattern = "ref_test", full.names = TRUE)
+
+basename(txt_file)
+```
+
+**Preview of the raw content:**
+
+```{r example-preview-raw, results='asis'}
+readLines(txt_file, warn = FALSE) |>
+  head(6) |> writeLines(sep = "\n\n")
+```
+
+---
+
+## Processing the file
+
+Here, the mode and the model are specified directly: the server is started or reached automatically, without any prior call to `grobid_docker_start()` or `grobid_remote_connect()`.
+
+```{r execution-et-sauvgarde, include=FALSE, eval=FALSE}
+# --- TO BE RUN ONLY ONCE, manually, with Docker active ---
+# This chunk is not evaluated when the site is built (eval = FALSE).
+grobid_res <- grobid_process_file(
+  file = txt_file,
+  service = "processCitationList",
+  mode = "docker",        # or "remote"
+  model_type = "crf",
+  output_format = "parsed"
+)
+
+saveRDS(grobid_res, cache_file("grobid_res"))
+```
+
+
+```{r chargement-grobid_res, include=FALSE}
+refs <- readRDS(cache_file("grobid_res"))
+```
+
+
+```{r example-process-file, eval=FALSE}
+refs <- grobid_process_file(
+  file = txt_file,
+  service = "processCitationList",
+  mode = "docker",        # or "remote"
+  model_type = "crf",
+  output_format = "parsed"
+)
+```
+
+The result is a table (*tibble*) with one row per reference:
+
+```{r example-refs-dim }
+dim(refs)
+names(refs)
+```
+
+```{r example-refs-table, }
+refs |>
+  select(ref_n, title, authors, year, journal, doi) |>
+  head(8) |>
+  kable_site(caption = "References extracted by GROBID (preview)") |>
+  column_spec(2, width = "22em")
+```
+
+For **several files**, use `grobid_process_files()`, which adds a `source_file` column to identify the origin of each row. Example with any PDFs available in the package:
+
+```{r example-process-files, eval = FALSE}
+pdf_files <- system.file("extdata", package = "CheckrefR") |>
+  list.files(pattern = "\\.pdf$", full.names = TRUE)
+
+refs_pdf <- grobid_process_files(
+  files = pdf_files,
+  service = "processReferences",
+  mode = "docker",
+  output_format = "parsed"
+)
+```
+
+
+# Validating references
+
+Once the references are extracted, their existence and accuracy can be checked.
+
+## Comparing against OpenAlex: `validate_references()`
+
+`validate_references()` takes the reference table as input (at minimum the columns `title`, `authors_list`, `doi`, `year`, `ref_n`, `source_file`) and follows a multi-step procedure:
+
+1.  **checking DOIs** against OpenAlex;
+2.  for unresolved or inconsistent DOIs, **querying `doi.org`**;
+3.  if necessary, **searching by title**;
+4.  computing **matching scores** (title, authors, year) and a global score;
+5.  keeping one to `max_candidates` candidates per reference (3 by default).
+
+```{r validate-references}
+
+checkrefr_set_defaults(oa_api_key = keyring::key_get("openalex"))
+
+cache_file <- "validated_refs_2.rds"
+
+if (file.exists(cache_file)) {
+  results <- readRDS(cache_file)
+} else {
+  ref_path <- system.file("extdata", "ref_test.txt", package = "CheckrefR")
+  results <- validate_references(refs, verbose = FALSE)
+  saveRDS(results, cache_file)
+}
+```
+
+Main columns of the result:
+
+| Column | Content |
+|:--|:--|
+| `input_title`, `input_doi`, `input_year`, `input_authors` | Information of the reference **as extracted**. |
+| `oa_title`, `oa_doi`, `oa_year`, `oa_authors` | Information of the candidate **OpenAlex record**. |
+| `score_title`, `score_authors`, `score_year` | Similarity scores (0 to 1). |
+| `score_global` | Weighted score: 60% title, 30% authors, 10% year. |
+| `n_candidates` | Number of candidates retained for this reference. |
+| `match_status` | Matching status (see below). |
+
+```{r validate-results-table}
+results |>
+  select(ref_n, input_title, oa_title, score_title, score_authors,
+         score_year, score_global, match_status) |>
+  mutate(across(starts_with("score_"), ~ round(.x, 2))) |>
+  head(10) |>
+  kable_site(caption = "Validation results (preview)") |>
+  column_spec(c(2, 3), width = "16em")
+```
+
+Most frequent statuses:
+
+| `match_status` | Meaning |
+|---|----|
+| `confirmed_with_doi` | DOI confirmed, with matching title and year. |
+| `partial_with_doi` | DOI found, but only a partial match. |
+| `doi_mismatch` | The DOI exists, but designates another publication. |
+| `doi_not_found` | DOI not found or nonexistent. |
+| `title_search` | Match found through a title search. |
+| `no_match` | No sufficiently close candidate. |
+
+```{r validate-status-count}
+results |>
+  count(match_status, name = "n_lignes", sort = TRUE) |>
+  kable_site(caption = "Distribution of matching statuses")
+```
+
+
+::: {.encadre}
+The thresholds (minimum score of 0.60; "probable" match from 0.85; DOI confirmation with a title score of at least 0.90 and an identical year) are those of the **experimental version**. See the warning in the introduction.
+::: 
+
+## Keeping the best match: `deduplicate_references()`
+
+Since `validate_references()` can return several candidates per reference, `deduplicate_references()` keeps only **the best row** (highest global score) for each `source_file` / `ref_n` pair. The order of the references is preserved.
+
+```{r deduplicate-references}
+best <- deduplicate_references(results, verbose = TRUE)
+```
+
+```{r deduplicate-table}
+best |>
+  select(ref_n, input_title, oa_doi, score_global, match_status) |>
+  mutate(score_global = round(score_global, 2)) |>
+  kable_site(caption = "One row per reference (best match)") |>
+  column_spec(2, width = "22em")
+```
+
+# Alternative without GROBID: APA 7 format references
+
+For references already written in **APA 7** (`Authors (year). Title. Journal, volume(issue), pages. DOI`), `parse_apa_text()` parses them using regular expressions, without a GROBID server. The `as_ref_df = TRUE` option produces a table directly compatible with `validate_references()`.
+
+```{r apa-parse-file}
+txt_files <- system.file("extdata", package = "CheckrefR") |>
+  list.files(pattern = "\\.txt$", full.names = TRUE)
+
+apa  <- txt_files[2]
+```
+
+<details class="refs-test">
+<summary>Click to display the detailed list of references used to test the validate_references function</summary>
+
+<div class="refs-contenu">
+
+```{r ref-test, results='asis', warning=FALSE}
+readLines(apa) |>  writeLines(sep = "\n\n")
+```
+
+</div>
+
+</details>
+
+
+
+```{r apa-table}
+apa_refs <- parse_apa_text(apa, as_ref_df = TRUE)
+
+apa_refs |>
+  select(authors, title, year, doi) |>
+  kable_site(caption = "APA 7 references parsed with regular expressions")
+```
+
+
+::: {.encadre}
+This method assumes a strictly compliant format: year in the form `(YYYY)`, title ending at the first period following the year, DOI as a `doi.org` URL at the end of the reference. Non-compliant references may produce missing values or partial extractions, without any error message.
+:::
+
+# Going further
+
+-   See the function reference for details on each argument;
+-   `grobid_server_info()` and `grobid_docker_stop()` let you check the status of the active server and stop the local container;
+-   `oa_matching_info()` describes the matching parameters with OpenAlex.

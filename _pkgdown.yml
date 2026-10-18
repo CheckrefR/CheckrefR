@@ -1,0 +1,122 @@
+url: https://CheckrefR.github.io/CheckrefR/
+
+template:
+  bootstrap: 5
+  bootswatch: cosmo
+  includes:
+    in_header: |
+      <style>
+        main { counter-reset: h2counter; }
+        main h2 { counter-reset: h3counter; }
+        main h3 { counter-reset: h4counter; }
+
+        main h2::before {
+          counter-increment: h2counter;
+          content: counter(h2counter) ". ";
+        }
+        main h3::before {
+          counter-increment: h3counter;
+          content: counter(h2counter) "." counter(h3counter) " ";
+        }
+        main h4::before {
+          counter-increment: h4counter;
+          content: counter(h2counter) "." counter(h3counter) "." counter(h4counter) " ";
+        }
+      </style>
+
+home:
+  title: "Grobid Client and Bibliographic Verification"
+  description: >
+    An R client for Grobid (local and remote), with bibliographic
+    reference verification via OpenAlex and DOI.org.
+
+
+navbar:
+  structure:
+    left:  [intro, reference, articles, news]
+    right: [github]
+  components:
+    intro:
+      text: "Get started"
+      href: articles/get-started.html
+    articles:
+      text: "Articles"
+      menu:
+        - text: "GROBID Server Setup"
+          href: articles/grobid-server-setup.html
+        - text: "Document Processing & Extraction"
+          href: articles/document-processing-extraction.html
+        - text: "Reference Validation Pipeline"
+          href: articles/reference-validation-pipeline.html
+    news:
+      text: "News"
+      href: news/index.html
+
+reference:
+  - title: "Environment & Installation Diagnostics"
+    desc: "Functions to diagnose the local OS, dependencies, and guide the user through installation steps."
+    contents:
+      - grobid_check_requirements
+      - grobid_install_guide
+      - grobid_server_info
+
+  - title: "GROBID Server Management"
+    desc: "Manage local Docker containers running GROBID or establish connections to remote servers."
+    contents:
+      - grobid_docker_check
+      - grobid_docker_start
+      - grobid_docker_stop
+      - grobid_docker_list_versions
+      - grobid_remote_connect
+
+  - title: "Package Configuration & State"
+    desc: "View and modify the default values, thresholds, and weights of the CheckrefR internal environment."
+    contents:
+      - checkrefr_env_status
+      - checkrefr_env_reset
+      - checkrefr_set_defaults
+      - oa_matching_info
+
+  - title: "Document Processing & Batch Execution"
+    desc: "Run GROBID extraction services on individual files, text batches, or entire directories."
+    contents:
+      - grobid_process_file
+      - grobid_process_files
+      - process_citation_file
+
+  - title: "XML Parsing & Structuring"
+    desc: "Extract and parse specific segments of TEI/XML outputs returned by GROBID into structured data frames."
+    contents:
+      - parse_fulltext
+      - parse_header
+      - parse_references
+      - parse_citation_list
+
+  - title: "Reference Validation & Cross-Matching"
+    desc: "Query OpenAlex and Crossref to validate reference metadata and filter results."
+    contents:
+      - validate_references
+      - deduplicate_references
+      - check_doi_exists
+
+  - title: "APA 7 Text Citation Utilities"
+    desc: "Functions designed to parse, format, and prepare raw text strings formatted according to APA 7 rules."
+    contents:
+      - parse_apa_text
+      - format_apa_for_validation
+
+  - title: "Author Similarity Scoring"
+    desc: "Fine-grained name-matching metrics and algorithms used inside the validation pipeline."
+    contents:
+      - compute_author_score
+      - sim_author_pair
+  - title: "Text Preprocessing Functions"
+    desc: "Unicode normalization and string cleaning functions."
+    contents:
+      - remove_diacritics
+      - to_lower_unicode
+
+footer:
+  structure:
+    left: developed_by
+    right: built_with

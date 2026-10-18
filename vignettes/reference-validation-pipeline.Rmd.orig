@@ -1,0 +1,888 @@
+---
+title: "Reference Validation Pipeline and Scoring"
+output:
+  rmarkdown::html_vignette:
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Reference Validation Pipeline and Scoring}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{css, echo=FALSE}
+.encadre {
+  border: 2px solid #31708f;
+  border-radius: 6px;
+  padding: 10px 15px;
+  margin: 15px 0;
+  background-color: #f9fcfe;
+}
+
+table.table caption {
+  caption-side: top;
+}
+
+details.refs-test {
+  border: 2px solid #31708f;
+  border-radius: 6px;
+  margin: 15px 0;
+  background-color: #f9fcfe;
+}
+
+details.refs-test > summary {
+  cursor: pointer;
+  padding: 10px 15px;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #31708f;
+  border-radius: 4px;
+  list-style: none;
+}
+
+details.refs-test > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.refs-test > summary::before {
+  content: "▶ ";
+}
+
+details.refs-test[open] > summary::before {
+  content: "▼ ";
+}
+
+details.refs-test > summary:hover {
+  background-color: #285a75;
+}
+
+details.refs-test > .refs-contenu {
+  padding: 5px 20px 15px 20px;
+}
+```
+
+```{r setup-options, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+```{r setup-packages, include = FALSE}
+library(CheckrefR)
+library(dplyr)
+library(knitr)
+library(kableExtra)
+```
+
+```{r setup-helper-table, include = FALSE}
+# Consistent formatting for the site's tables
+kable_site <- function(x, caption = NULL, ...) {
+  x |>
+    kbl(caption = caption, booktabs = TRUE, ...) |>
+    kable_styling(
+      bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+      full_width = FALSE,
+      font_size = 13,
+      html_font = NULL
+    ) |>
+    row_spec(0, extra_css = "")  # optional
+}
+```
+
+# Introduction
+
+This page presents the **validation of bibliographic references**: comparing extracted references (by GROBID or by APA 7 regular expressions) with online metadata databases (OpenAlex and doi.org), and measuring how well they match.
+
+It follows the logical order of a complete workflow:
+
+1.  **Prepare the references** in a format compatible with validation (preliminary step, briefly recalled);
+2.  **Validate** with `validate_references()` and interpret its output;
+3.  **Understand how the scores are computed** (title, authors, year, global score) and their known limitations;
+4.  **Tune the validation parameters** with `oa_matching_info()` and `checkrefr_set_defaults()`;
+5.  **Examine the author score in detail** with `compute_author_score()` and `sim_author_pair()`;
+6.  **Deduplicate** the result with `deduplicate_references()`.
+
+::: {.encadre}
+**Caution.** As noted on the [Get started](get-started.html) page, the current version of the package is **experimental** and the score computation method is under revision. Scores and statuses are **decision aids**, not a verdict: manual verification remains necessary for ambiguous cases. Known limitations are detailed in the section "Known limitations of the current formula" below.
+:::
+
+# Preliminary step: preparing the references
+
+`validate_references()` expects a table of references in a specific format. Two routes can produce it. Their operation is presented on other pages; they are recalled here to provide a complete pipeline.
+
+| Source of references | Function(s) | Result |
+|:--|:--|:--|
+| PDF or text files processed by GROBID | `grobid_process_file()` or `grobid_process_files()` | Directly compatible table |
+| References in APA 7 format (plain text) | `parse_apa_text(..., as_ref_df = TRUE)` (equivalent to `parse_apa_text()` followed by `format_apa_for_validation()`) | Compatible table |
+
+## GROBID route
+
+```{r prep-grobid, eval = FALSE}
+ref_path <- system.file("extdata", "ref_test.txt", package = "CheckrefR")
+
+res <- grobid_process_file(
+  file = ref_path,
+  mode = "remote",
+  model_type = "crf"
+)
+
+refs <- res$references
+```
+
+## APA 7 route
+
+
+```{r creat-ref_path, include=FALSE}
+ref_path <- system.file("extdata", "ref_test.txt", package = "CheckrefR")
+```
+
+```{r prep-apa, eval = TRUE}
+refs <- parse_apa_text(ref_path, as_ref_df = TRUE)
+```
+
+## Expected format
+
+In both cases, the `refs` table contains (at minimum) the following columns:
+
+| Column | Content |
+|:--|:--|
+| `raw_reference` | Raw text of the reference |
+| `source_file` | Name of the original file |
+| `ref_n` | Number of the reference within that file |
+| `title` | Extracted title |
+| `authors` | Authors as text |
+| `authors_list` | Authors as a structured list (first name, last name) |
+| `doi` | Extracted DOI, if any |
+| `year` | Year of publication |
+
+::: {.encadre}
+**One row = one reference.** The `source_file` + `ref_n` pair uniquely identifies each reference. This key is what later allows results to be grouped and deduplicated (see the last section).
+:::
+
+# Validating references: `validate_references()`
+
+## General principle
+
+For each reference, the function queries **OpenAlex** (a large open database of scientific publications) and, if needed, **doi.org** (the service that resolves DOIs), then compares the metadata found with those of the original reference.
+
+The logic unfolds in two stages:
+
+1.  **DOI validation** (if the reference has one). Syntactically valid DOIs are first looked up in OpenAlex, in batches. Those not found there are then queried individually on doi.org.
+2.  **Title validation**. The title is searched in OpenAlex, either in addition to the DOI (if it was not sufficient) or in its place (if there is none).
+
+Each candidate found receives **matching scores** (title, authors, year, global) and a **status** summarizing the result.
+
+```{r validate-call, eval = FALSE}
+validated <- validate_references(refs)
+```
+
+| Argument | Role | Default value |
+|:--|:--|:--|
+| `refs` | Table of references in the format described above | (required) |
+| `verbose` | Displays progress and a final summary | `TRUE` |
+| `max_candidates` | Maximum number of candidates kept per reference | `3` (setting `oa_max_candidates`) |
+
+```{r validate-run, eval = TRUE, message = TRUE}
+
+checkrefr_set_defaults(oa_api_key = keyring::key_get("openalex"))
+
+cache_file <- "validated_refs.rds"
+
+if (file.exists(cache_file)) {
+  validated <- readRDS(cache_file)
+} else {
+  ref_path <- system.file("extdata", "ref_test.txt", package = "CheckrefR")
+  refs <- parse_apa_text(ref_path, as_ref_df = TRUE)
+  validated <- validate_references(refs)
+  saveRDS(validated, cache_file)
+}
+```
+
+::: {.encadre}
+**Network and duration.** Validation requires an Internet connection and can take time depending on the number of references. Requests are sent in batches with a short pause between each, and temporary errors are automatically retried.
+:::
+
+## OpenAlex API key and email address
+
+`validate_references()` queries the OpenAlex API. For regular use, it is **strongly recommended** to provide two pieces of information, once per session, with `checkrefr_set_defaults()`:
+
+```{r set-defaults-openalex, eval = FALSE}
+checkrefr_set_defaults(
+  oa_api_key = "YOUR_OPENALEX_KEY",
+  doi_email  = "firstname.lastname@example.org"
+)
+```
+
+| Parameter    | Role    |
+| :------ | :----------------- |
+| `oa_api_key` | Personal OpenAlex API key, sent with each request                                                                                   |
+| `doi_email`  | Your email address, sent to OpenAlex (`mailto` parameter) and to the other services queried (doi.org) in the request identification |
+
+::: {.encadre} 
+
+**Obtaining an OpenAlex API key.**
+
+1. Create a (free) account on [openalex.org](https://openalex.org/).
+2. Log in, then open the Settings page of your account to generate your API key.
+3. Copy the key and pass it to the package with `checkrefr_set_defaults(oa_api_key = "...")`.
+
+**Usage limits.** The OpenAlex API applies rate limits (number of requests per second and per day) and, depending on its current policy, may require users to identify themselves for regular use. These rules **change** and are not managed by CheckrefR: consult the [official OpenAlex rate limits page](https://docs.openalex.org/how-to-use-the-api/rate-limits-and-authentication) for current values.
+
+**Without a key.** Validation works, but you share the anonymous quota, which is more restricted. If it is exceeded, the server responds "429 Too Many Requests": the package then automatically retries the request (up to 5 attempts, with increasing wait times). If the failure persists, the references concerned are treated as not found, which can skew results on large volumes.
+
+**With a key.** You benefit from the limits associated with your account, which is preferable for validating long lists of references.
+:::
+
+::: {.encadre} 
+**Tips for large volumes.** Validate in batches of references rather than all at once, keep intermediate results with `saveRDS()`, and watch the messages displayed during processing: a message reporting a batch that failed after several attempts means the DOIs concerned will be considered not found.
+:::
+
+To check the active configuration, use `oa_matching_info()`: the key appears under the heading "API key (oa_api_key)", or "(not set)" if it is not defined.
+
+
+## Reading the result
+
+The result contains **one row per retained candidate**, so a reference may appear on several rows (up to `max_candidates`).
+
+The output of `validate_references()` contains the following columns, in this order:
+
+| Column | Content |
+|:--|:--|
+| `source_file` | Name of the reference's original file |
+| `ref_n` | Number of the reference within that file |
+| `input_title` | Title extracted from your reference |
+| `input_doi` | DOI extracted from your reference |
+| `input_year` | Year extracted from your reference |
+| `input_authors` | Authors extracted from your reference |
+| `oa_id` | OpenAlex identifier of the candidate found |
+| `oa_title` | Title of the candidate |
+| `oa_doi` | DOI of the candidate |
+| `oa_year` | Year of the candidate |
+| `oa_authors` | Authors of the candidate |
+| `score_title` | Title similarity (0 to 1) |
+| `score_authors` | Author list similarity (0 to 1) |
+| `score_year` | Year match (0, 0.5 or 1) |
+| `score_global` | Weighted global score (0 to 1) |
+| `n_candidates` | Number of candidates retained for this reference |
+| `match_status` | Match status (see table below) |
+| `raw_reference` | Raw text of the original reference |
+
+Columns prefixed with `input_` describe **your** reference, while those prefixed with `oa_` describe the **candidate** found (OpenAlex or doi.org). When no candidate is found (`no_match`), the `oa_*` columns and the scores are empty.
+
+```{r validate-preview, eval = TRUE}
+validated |>
+  select(ref_n, input_title, oa_title, score_title, score_authors,
+         score_year, score_global, match_status) |>
+  head(8) |>
+  kable_site(
+    caption = "Preview of the validation result",
+    digits = 2
+  )
+```
+
+## Match statuses (`match_status`)
+
+| Status | Meaning |
+|:--|:--|
+| `confirmed_with_doi` | The DOI leads to a work with the **same year** and a **very close title** (similarity of at least `oa_doi_threshold`, 0.90 by default). Strong match. |
+| `partial_with_doi` | The DOI exists and leads to a work that is broadly compatible (global score of at least `oa_min_threshold`), but the year or title is not enough to confirm. **To be checked.** |
+| `doi_mismatch` | The DOI exists, but the work found **does not sufficiently match** the reference (global score below `oa_min_threshold`). Suggests a DOI associated with another publication. |
+| `doi_does_not_exist` | doi.org indicates that this DOI **does not exist**. |
+| `title_search` | Candidate found by **title search** in OpenAlex (reference without a DOI, or inconclusive DOI). |
+| `no_match` | **No sufficiently close candidate** was found. The `oa_*` columns and the scores are empty. |
+
+::: {.encadre}
+**Generative AI error scenarios.** These statuses make it possible to detect the cases described in [Get started](get-started.html):
+
+-   *real reference, wrong DOI*: `doi_mismatch` or `doi_does_not_exist`, often accompanied by a `title_search` candidate with a good score;
+-   *real DOI, wrong reference*: `doi_mismatch` (the DOI points to a different article);
+-   *entirely fabricated reference*: `no_match`;
+-   *partially accurate reference*: `partial_with_doi`, or a `title_search` status with an intermediate global score.
+:::
+
+```{r validate-status-count, eval = TRUE}
+validated |>
+  count(match_status, name = "n_rows") |>
+  arrange(desc(n_rows)) |>
+  kable_site(caption = "Distribution of statuses in the example")
+```
+
+
+
+## Putting it in perspective: a test reference set with known ground truth
+
+The example file `ref_test.txt` was built to **illustrate the different scenarios** that validation must distinguish. It contains 14 references whose true status is known in advance, which makes it possible to **compare what the package returns with what is expected**.
+
+The references fall into four categories:
+
+| Category | Description | References |
+|:-----|:-------------|:---|
+| **1. Correct** | Real reference, accurate metadata (article, conference paper, preprint, book, chapter) | 1 to 5 |
+| **2. Misattributed DOI** | The DOI exists and works, but points to **a different article** than the one cited (both publications are real) | 6 and 7 |
+| **3. Fabricated DOI** | The DOI does not exist, but the rest of the reference is accurate | 8 and 9 |
+| **4. Nonexistent** | Entirely false reference: *level 1* (gross inconsistencies) or *level 2* (plausible, close to a real reference) | 10 to 14 |
+
+
+<details class="refs-test">
+<summary>Click to display the detailed list of the 14 references used for the test</summary>
+
+<div class="refs-contenu">
+
+*This list presents the exact text of each reference in the `ref_test.txt` file, grouped by category, with details on the nature of the error introduced.*
+
+### Category 1: references correct in every respect
+
+**1. Research article**
+
+Deci, E. L., & Ryan, R. M. (2000). The "what" and "why" of goal pursuits: Human needs and the self-determination of behavior. *Psychological Inquiry*, *11*(4), 227–268. https://doi.org/10.1207/S15327965PLI1104_01
+
+**2. Conference paper**
+
+Mikolov, T., Chen, K., Corrado, G., & Dean, J. (2013). Efficient estimation of word representations in vector space. In Y. Bengio & Y. LeCun (Eds.), *Proceedings of the 1st International Conference on Learning Representations* (pp. 1–12). ICLR.
+
+**3. Preprint**
+
+Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., Kaiser, Ł., & Polosukhin, I. (2017). *Attention is all you need*. arXiv. https://doi.org/10.48550/arXiv.1706.03762
+
+**4. Book**
+
+Kahneman, D. (2011). *Thinking, fast and slow*. Farrar, Straus and Giroux.
+
+**5. Book chapter**
+
+Baumeister, R. F., & Leary, M. R. (1995). The need to belong: Desire for interpersonal attachments as a fundamental human motivation. In R. F. Baumeister (Ed.), *Social psychology and human nature* (pp. 497–529). Wadsworth.
+
+### Category 2: existing DOI but associated with the wrong reference
+
+*The DOI is real and functional, but it points to a different article than the one cited. Both publications actually exist.*
+
+**6.** Bandura, A. (1977). Self-efficacy: Toward a unifying theory of behavioral change. *Psychological Review*, *84*(2), 191–215. https://doi.org/10.1037/0003-066X.55.1.5
+
+> This DOI actually corresponds to Seligman, M. E. P., & Csikszentmihalyi, M. (2000). Positive psychology: An introduction. *American Psychologist*, *55*(1), 5–14.
+
+**7.** Watson, D., Clark, L. A., & Tellegen, A. (1988). Development and validation of brief measures of positive and negative affect: The PANAS scales. *Journal of Personality and Social Psychology*, *54*(6), 1063–1070. https://doi.org/10.1037/0022-3514.84.4.822
+
+> This DOI actually corresponds to Sheldon, K. M., & Lyubomirsky, S. (2006). How to increase and sustain positive emotion. *Journal of Positive Psychology*.
+
+### Category 3: false or nonexistent DOI, rest of the reference correct
+
+**8.** Rogers, C. R. (1957). The necessary and sufficient conditions of therapeutic personality change. *Journal of Consulting Psychology*, *21*(2), 95–103. https://doi.org/10.1037/h9999999
+
+**9.** Tversky, A., & Kahneman, D. (1974). Judgment under uncertainty: Heuristics and biases. *Science*, *185*(4157), 1124–1131. https://doi.org/10.1126/science.1974.tk421
+
+### Category 4: entirely nonexistent references
+
+#### Level 1: obviously false (gross inconsistencies)
+
+**10.** Dupont, J.-M., & Tremblay, A. (2019). *L'influence quantique de la pensée positive sur la mécanique cellulaire réversible*. *Journal of Impossible Psychology*, *45*(12), 3001–3045. https://doi.org/10.9999/fake.impossible.2019
+
+**11.** Smith, A. B., Johnson, C. D., & Williams, E. F. (2021). A study of nothing in particular that somehow got published. *International Journal of Studies About Studies*, *0*(0), 1–1. https://doi.org/10.0000/null.void
+
+#### Level 2: false but plausible (close to a real reference)
+
+**12.** Kahneman, D., & Tversky, A. (1984). *Thinking, slow and fast*. Farrar, Straus and Giroux.
+
+> Close to: Kahneman, D. (2011). *Thinking, fast and slow*. Farrar, Straus and Giroux. Authors, title and year modified or swapped.
+
+**13.** Deci, E. L., & Ryan, R. M. (2001). The "how" and "why" of goal attainment: Human motivation and self-determination reconsidered. *Psychological Inquiry*, *12*(3), 315–350. https://doi.org/10.1207/S15327965PLI1203_04
+
+> Very close to the real reference in category 1: title, year, volume, pages and DOI slightly modified.
+
+**14.** Baumeister, R. F., & Leary, M. R. (1996). The need to belong: Desire for social bonding as a fundamental human need. In R. F. Baumeister & M. R. Leary (Eds.), *Human nature and social psychology* (pp. 495–530). Wadsworth.
+
+> Close to the real chapter: title slightly modified, editors added, year and pages shifted.
+
+</div>
+
+</details>
+
+### Configuration of the references used for the test
+
+| #   | Type             | Test category     | Valid DOI?         | Does the reference exist? |
+| --- | ---------------- | ----------------- | ------------------ | ------------------------- |
+| 1   | Article          | Correct           | ✅ Yes, matches     | ✅ Yes                     |
+| 2   | Conference paper | Correct           | N/A                | ✅ Yes                     |
+| 3   | Preprint         | Correct           | ✅ Yes, matches     | ✅ Yes                     |
+| 4   | Book             | Correct           | N/A                | ✅ Yes                     |
+| 5   | Chapter          | Correct           | N/A                | ✅ Yes                     |
+| 6   | Article          | Misattributed DOI | ✅ Valid but wrong  | ✅ Yes (both refs)         |
+| 7   | Article          | Misattributed DOI | ✅ Valid but wrong  | ✅ Yes (both refs)         |
+| 8   | Article          | Fabricated DOI    | ❌ Does not exist   | ✅ Yes (the rest)          |
+| 9   | Article          | Fabricated DOI    | ❌ Does not exist   | ✅ Yes (the rest)          |
+| 10  | Article          | False (level 1)   | ❌ Does not exist   | ❌ No                      |
+| 11  | Article          | False (level 1)   | ❌ Does not exist   | ❌ No                      |
+| 12  | Book             | False (level 2)   | N/A                | ❌ No, close to a real one |
+| 13  | Article          | False (level 2)   | ❌ Does not exist   | ❌ No, close to a real one |
+| 14  | Chapter          | False (level 2)   | N/A                | ❌ No, close to a real one |
+
+
+
+### Examples of each category
+
+::: {.encadre} 
+**Category 1: correct.** *Deci & Ryan (2000), "The 'what' and 'why' of goal pursuits…"*, with its exact DOI. We expect a `confirmed_with_doi` status and scores close to 1. References without a DOI (conference paper, book, chapter) go through title search: we expect `title_search`, with a score that varies depending on how well OpenAlex covers these document types.
+
+**Category 2: misattributed DOI.** *Bandura (1977), "Self-efficacy…"*, associated with the DOI `10.1037/0003-066X.55.1.5`, which actually corresponds to Seligman & Csikszentmihalyi (2000). Both publications exist, but do not belong together. We expect `doi_mismatch`, possibly accompanied by a `title_search` candidate corresponding to the true reference.
+
+**Category 3: fabricated DOI.** *Rogers (1957), "The necessary and sufficient conditions…"*, with a nonexistent DOI (`10.1037/h9999999`): the rest of the reference is accurate. We expect `doi_does_not_exist` or `doi_not_found`, then a good candidate found by title.
+
+**Category 4, level 1: obviously false.** *Dupont & Tremblay (2019), "L'influence quantique de la pensée positive…"*. We expect `no_match`.
+
+**Category 4, level 2: false but plausible.** *Kahneman & Tversky (1984), "Thinking, slow and fast"*, very close to Kahneman's real reference (2011). This is the trickiest case: a title close to a real work can produce an **intermediate score** and a misleading `title_search` candidate.
+:::
+
+### Results obtained on `ref_test.txt`
+
+
+```{r test-design, eval = TRUE, include=FALSE}
+design <- data.frame(
+  ref_n = 1:14,
+  Type = c("Article", "Conference paper", "Preprint", "Book", "Chapter",
+           "Article", "Article", "Article", "Article",
+           "Article", "Article", "Book", "Article", "Chapter"),
+  Categorie = c(rep("1. Correct", 5),
+                rep("2. Misattributed DOI", 2),
+                rep("3. Fabricated DOI", 2),
+                rep("4. False (level 1)", 2),
+                "4. False (level 2)", "4. False (level 2)", "4. False (level 2)"),
+  DOI_valide = c("Yes", "N/A", "Yes", "N/A", "N/A",
+                 "Valid but wrong", "Valid but wrong",
+                 "Does not exist", "Does not exist",
+                 "Does not exist", "Does not exist",
+                 "N/A", "Does not exist", "N/A"),
+  Existe = c(rep("Yes", 5),
+             "Yes (both refs)", "Yes (both refs)",
+             "Yes (the rest)", "Yes (the rest)",
+             "No", "No",
+             "No, close to a real one", "No, close to a real one",
+             "No, close to a real one"),
+  stringsAsFactors = FALSE
+)
+```
+
+```{r }
+comparison <- validated |>
+  group_by(ref_n) |>
+  slice_max(score_global, n = 1, with_ties = FALSE, na_rm = FALSE) |>
+  ungroup() |>
+  select(ref_n, match_status, score_title, score_authors, score_year, score_global) |>
+  left_join(design, by = "ref_n") |>
+  select(ref_n, Categorie, match_status, score_title, score_authors,
+         score_year, score_global)
+
+comparison |>
+  kable_site(
+    caption = "Result obtained for each reference in the test set (best candidate)",
+    col.names = c("ref_n", "Expected category", "match_status",
+                  "Title", "Authors", "Year", "Global"),
+    digits = 2
+  )
+```
+
+### How to read this comparison
+
+Compare, row by row, the **expected category** with the **status obtained**:
+
+- references in category 1 should have high scores and a matching status (`confirmed_with_doi` or `title_search`);
+- those in categories 2 and 3 should show a DOI-related status (`doi_mismatch`, `doi_does_not_exist`, `doi_not_found`);
+- those in category 4 should be `no_match`, or else obtain markedly lower scores than the correct references.
+
+::: {.encadre} 
+**What this test shows, and what it does not.** It illustrates the package's behavior on **only 14 cases**, chosen for their pedagogical value: it is neither a statistical evaluation of the method nor a measure of its reliability. **Level 2** cases (false references close to real ones) and references **without a DOI** (books, chapters, conference papers) are the most sensitive: an intermediate score does not allow a conclusion, and manual verification remains necessary.
+:::
+
+# Score computation
+
+## Overview
+
+Each candidate receives three partial scores, all between 0 (no resemblance) and 1 (identical), then a **global score** that combines them.
+
+::: {.encadre}
+⚠️ **Experimental version.** The formula presented here is the one **currently implemented**. It is under revision and has limitations (see below). Stay vigilant when interpreting it. More formal tests are planned.
+:::
+
+## Title score
+
+The two titles (that of your reference and that of the candidate) are first **normalized**: conversion to lowercase, removal of accents, replacement of any character other than an unaccented letter, a digit or a space with a space, and collapsing of multiple spaces.
+
+The score is then a **string similarity** based on the Damerau-Levenshtein distance:
+
+$$
+S_{\text{title}} = 1 - \frac{d_{DL}(t_1,\, t_2)}{\max(|t_1|,\, |t_2|)}
+$$
+
+In plain terms: $d_{DL}$ counts the minimum number of edits (inserting, deleting or replacing a character, or swapping two adjacent characters) needed to transform one title into the other. This number is divided by the length of the longer title, then subtracted from 1. Two identical titles score 1; the more they differ, the closer the score gets to 0. If one of the titles is missing, the score is 0.
+
+## Year score
+
+$$
+S_{\text{year}} =
+\begin{cases}
+1 & \text{if } |a_1 - a_2| = 0 \\
+0.5 & \text{if } |a_1 - a_2| = 1 \\
+0 & \text{otherwise (or if a year is missing)}
+\end{cases}
+$$
+
+In plain terms: identical year, 1; one year apart, 0.5 (tolerance for publications whose online and print volume dates differ); beyond that, 0.
+
+## Author score
+
+The author score is computed by comparing authors **pairwise**, then taking the **average** of these comparisons:
+
+$$
+S_{\text{authors}} = \frac{1}{n} \sum_{i=1}^{n} s(a_i,\, b_i)
+$$
+
+In plain terms: we take the $n$ author pairs compared (the $i$-th author of your reference with the $i$-th author of the candidate), compute a similarity score $s$ for each pair, then average them. The detail of the computation for one pair is given below (`sim_author_pair()`). Additional rules (lists of different lengths, truncated lists) are described in the section dedicated to `compute_author_score()`.
+
+## Global score
+
+$$
+S_{\text{global}} = w_t \cdot S_{\text{title}} + w_a \cdot S_{\text{authors}} + w_y \cdot S_{\text{year}}
+$$
+
+with default values $w_t = 0.60$, $w_a = 0.30$ and $w_y = 0.10$.
+
+In plain terms: the global score is a **weighted average**. The title counts for 60%, the authors for 30% and the year for 10%. If the three weights do not sum exactly to 1, they are automatically **rescaled to sum to 1** before the computation.
+
+```{r scoring-example-weights, eval = TRUE}
+# Illustration with the default weights
+s_title <- 0.95; s_authors <- 0.80; s_year <- 1
+
+0.60 * s_title + 0.30 * s_authors + 0.10 * s_year
+```
+
+## How candidates are retained
+
+1.  Candidates whose global score is **below `oa_min_threshold`** (0.60 by default) are discarded (except for candidates coming from a DOI, whose status is then determined as described above);
+2.  the remaining candidates are **sorted** from best to worst;
+3.  the best one is **always kept**;
+4.  the following ones are kept only if they reach **`oa_probable_threshold`** (0.85 by default);
+5.  the total is capped at **`max_candidates`**.
+
+## Known limitations of the current formula
+
+::: {.encadre}
+**⚠️ Author score: points of caution.**
+
+**1. One score per author, then an average.** The author score is not computed on the list as a whole: it is the **average** of the scores of each author taken individually. A false positive on a single author therefore does not carry the same weight depending on the size of the list: it weighs heavily in a two-author reference, and very little in a twenty-author reference. The impact of the bias described below therefore varies with the number of authors.
+
+**2. Lax bias: a single shared word is enough.** An author receives a score of at least **0.8 out of 1** as soon as **at least one element of their name** (one "word" of the family name, generally) is identical in both sources. Two genuinely different compound names can thus be considered matching on the basis of just one part of the surname. The risk is particularly marked for names with a **particle** (*van*, *de*, *der*, *von*...) or with several elements: a common particle, or a single shared element, can be enough to produce a match.
+
+**3. Strict bias: accents and special characters.** Conversely, the comparison is made **word by word** and requires an **exact** match of characters. The slightest difference between two words (an accent present in one source and absent in the other, for example) causes those words to be considered different. Yet the diacritics of an author's name often vary between sources: a genuine match may then go unrecognized.
+:::
+
+::: {.encadre}
+**Practical consequence.** A high author score does not prove that the author lists match, and a low score may simply reflect variations in how names are spelled. For high-stakes references, look at the `input_authors` and `oa_authors` columns side by side.
+:::
+
+# Tuning the validation
+
+## Viewing the settings: `oa_matching_info()`
+
+This function displays the parameters currently used for validation and returns them (invisibly) as a list.
+
+```{r clean-oa-api-key, include=FALSE}
+checkrefr_env_reset(fields =c("oa_api_key"))
+```
+
+
+```{r oa-matching-info, eval = TRUE, message = TRUE}
+info <- oa_matching_info()
+```
+
+The returned list contains five groups of parameters:
+
+| Element | Content |
+|:--|:--|
+| `thresholds` | Decision thresholds |
+| `weights` | Global score weights |
+| `query_controls` | Number of candidates and OpenAlex API key |
+| `author_window` | Window-based comparison settings and large-list settings |
+| `truncation` | Coverage and penalty settings for truncated lists |
+
+## Changing the settings: `checkrefr_set_defaults()`
+
+Settings are changed with `checkrefr_set_defaults()`, for the current session (see the *GROBID Server Setup and Administration* page for the general principle and for resetting).
+
+```{r set-defaults-oa, eval = FALSE}
+checkrefr_set_defaults(
+  oa_min_threshold = 0.55,
+  oa_w_title       = 0.70,
+  oa_w_authors     = 0.20,
+  oa_w_year        = 0.10
+)
+```
+
+### Thresholds
+
+| Parameter | Role | Default |
+|:--|:-----|:--|
+| `oa_min_threshold` | **Minimum** global score required to retain a candidate. Also used to distinguish `partial_with_doi` from `doi_mismatch`. | `0.60` |
+| `oa_probable_threshold` | Global score required to keep **additional** candidates beyond the best one. | `0.85` |
+| `oa_doi_threshold` | **Title similarity** threshold required (with an identical year) to confirm a DOI match (`confirmed_with_doi`). | `0.90` |
+
+### Weights
+
+| Parameter | Role | Default |
+|:--|:--|:--|
+| `oa_w_title` | Weight of the title in the global score | `0.60` |
+| `oa_w_authors` | Weight of the authors | `0.30` |
+| `oa_w_year` | Weight of the year | `0.10` |
+
+### Queries
+
+| Parameter | Role | Default |
+|:--|:------|:--|
+| `oa_max_candidates` | Maximum number of candidates retained per reference | `3` |
+| `oa_api_key` | OpenAlex API key (optional) | not set |
+| `doi_email` | Email address sent to the services queried (good practice for "polite" access) | not set |
+| `doi_max_retries` | Maximum number of attempts for doi.org in case of a network or server error | `3` |
+| `doi_retry_backoff` | Initial delay between two attempts (seconds), doubled with each new attempt | `1` |
+
+### Author list comparison
+
+| Parameter | Role | Default |
+|:--|:-------|:--|
+| `oa_large_author_threshold` | OpenAlex list size from which a comparison with a very short list (2 authors or fewer) is considered **indeterminate** (score of 0) | `10` |
+| `oa_sym_max_diff_abs` | Maximum **absolute** length difference between two lists for them to be considered of comparable length | `2` |
+| `oa_sym_max_diff_prop` | Maximum **relative** length difference for them to be considered of comparable length | `0.10` |
+| `oa_min_coverage_ratio` | Minimum share of the longer list covered by the shorter one for a penalty to be applied | `0.65` |
+| `oa_author_lambda` | Intensity of the penalty applied to lists of different lengths | `0.4` |
+| `oa_use_window` | Enables **window-based** comparison (instead of a strictly position-by-position comparison) | `FALSE` |
+| `oa_window_size` | Half-width of the window (number of positions before and after) | `2` |
+
+::: {.encadre}
+**Weights.** The three weights are automatically rescaled to sum to 1 if they do not already. The default values should be considered provisional: the scoring method is under revision.
+:::
+
+# The author score in detail
+
+## Comparing two lists: `compute_author_score()`
+
+`compute_author_score()` computes the author score for **two lists** of names. It is used automatically by `validate_references()`, but can be called on its own to test a case.
+
+| Argument | Role |
+|:--|:------|
+| `ng` | List (vector) of the authors of **your reference** |
+| `no` | List (vector) of the authors of the **candidate** (OpenAlex or doi.org) |
+| `truncation_detected` | Indicates that your reference's list is probably truncated (e.g. "et al.") |
+| Other arguments | Same settings as in `checkrefr_set_defaults()` (see previous table) |
+
+```{r author-score-basic, eval = TRUE}
+ng <- c("Smith, J.", "Doe, A.", "Martin, P.")
+no <- c("John Smith", "Alice Doe", "Pierre Martin")
+
+compute_author_score(ng, no)
+```
+
+**Rules depending on list size**
+
+-   **Lists of comparable length** (difference of at most `oa_sym_max_diff_abs` authors, or relative difference of at most `oa_sym_max_diff_prop`): authors are compared **position by position**, and the average is taken.
+-   **Lists of different lengths**: the comparison covers the number of authors in the shorter list (position by position, or by **window** if `oa_use_window = TRUE`). If the shorter list covers at least `oa_min_coverage_ratio` of the longer one, the score is **reduced** by a penalty proportional to the lack of coverage, modulated by `oa_author_lambda`.
+-   **Truncated list** (`truncation_detected = TRUE`, for example a reference that ends with "et al."): when your list is the shorter one, **no penalty** is applied.
+-   **Indeterminate case**: if your list has 2 authors or fewer against a list of `oa_large_author_threshold` authors or more, the score is set to **0** (comparison deemed uninformative).
+
+```{r author-score-truncated, eval = TRUE}
+ng_short <- c("Smith, J.", "Doe, A.")
+no_long  <- c("John Smith", "Alice Doe", "Pierre Martin", "Marie Curie")
+
+# No truncation indicated: penalty applied
+compute_author_score(ng_short, no_long)
+
+# List known to be truncated ("et al."): no penalty
+compute_author_score(ng_short, no_long, truncation_detected = TRUE)
+```
+
+## Comparing two authors: `sim_author_pair()`
+
+`sim_author_pair()` compares **two author names** and returns a score between 0 and 1.
+
+```{r sim-author-pair, eval = TRUE}
+sim_author_pair("Smith, J.", "John Smith")
+sim_author_pair("Smith, J.", "Smith, A.")
+sim_author_pair("Smith, J.", "Doe, A.")
+```
+
+**Comparison steps**
+
+1.  Each name is **normalized**: lowercase, removal of commas and semicolons, hyphens treated as separators, splitting into words, and distinction between **full words** (surname, first name) and **initials**.
+2.  The full words of the two names are compared: we look for those that are **identical**.
+3.  The score follows from the result:
+
+$$
+s(a, b) =
+\begin{cases}
+0 & \text{if no full word is shared} \\
+0.8 + 0.2 \times J & \text{otherwise}
+\end{cases}
+$$
+
+In plain terms: with no shared full word, the two names do not match (0). As soon as **a single** full word is shared, the score starts at **0.8**. The remaining 0.2 depends on how close the **remaining initials** are ($J$ is the Jaccard index: the share of common initials among all the initials of both names, from 0 to 1). Thus, an identical surname and initial give 1; the same family name with different initials gives 0.8.
+
+::: {.encadre}
+**Link with the limitations.** It is this "0.8 as soon as one full word is shared" rule that explains the lax bias described above. The **exact** word-by-word comparison (without accent harmonization) explains the strict bias.
+:::
+
+**`same_position = FALSE` mode.** Used for window-based comparison, it replaces the previous rule with an **F1**-type score: we count the share of words (full words and initials) in common relative to each of the two names, then combine the two proportions into a harmonic mean. The result remains between 0 and 1.
+
+# Deduplicating the results: `deduplicate_references()`
+
+Since `validate_references()` can return **several candidates per reference**, `deduplicate_references()` keeps only **the best candidate** for each reference, that is, the one with the highest `score_global`.
+
+```{r deduplicate-run, eval = TRUE, message = TRUE}
+best <- deduplicate_references(validated, verbose = TRUE)
+```
+
+| Argument | Role | Default |
+|:--|:--|:--|
+| `data` | Output of `validate_references()` (columns `source_file`, `ref_n` and `score_global` required) | (required) |
+| `verbose` | Displays a summary of the deduplication | `TRUE` |
+
+**How it works**
+
+-   rows are grouped by reference (`source_file` + `ref_n` pair);
+-   within each group, the row with the **highest global score** is kept; a missing score is treated as the lowest;
+-   in case of a tie, the **first** row encountered is retained;
+-   columns remain **unchanged** and the original row order is preserved.
+
+```{r deduplicate-compare, eval = TRUE}
+data.frame(
+  Table = c("Before deduplication", "After deduplication"),
+  Rows = c(nrow(validated), nrow(best)),
+  `Distinct references` = c(
+    n_distinct(validated $ source_file, validated $ ref_n),
+    n_distinct(best $ source_file, best $ ref_n)
+  ),
+  check.names = FALSE
+) |>
+  kable_site(caption = "Effect of deduplicate_references()")
+```
+
+```{r deduplicate-preview, eval = TRUE}
+best |>
+  select(ref_n, input_title, oa_title, score_global, match_status) |>
+  head(8) |>
+  kable_site(
+    caption = "Best candidate per reference",
+    digits = 2
+  )
+```
+
+::: {.encadre}
+**Good to know.** Deduplication chooses the candidate with the **highest global score**, which inherits the score limitations described above. A higher score is not a guarantee of a match: examine the `match_status` and compare the input and output metadata, especially for intermediate scores.
+:::
+
+# Quickly checking whether DOIs exist
+
+`validate_references()` compares a reference with full metadata. Sometimes a simpler question is enough: **does this DOI actually exist?** That is the role of `check_doi_exists()`, a quick, standalone check, useful for instance to immediately spot fabricated DOIs (category 3 of the test set).
+
+::: {.encadre}
+**What is the difference with `validate_references()`?** `check_doi_exists()` answers only "yes", "no" or "undetermined" to the question of whether a DOI exists. It compares **neither the title, nor the authors, nor the year**: a DOI that exists but is assigned to the wrong reference (category 2) will therefore be declared "existing". To detect this case, you must use `validate_references()`. Moreover, the function is not called internally by `validate_references()`, which uses its own querying path (OpenAlex, then doi.org).
+:::
+
+## Usage
+
+```{r doi-exists-single, eval = FALSE}
+check_doi_exists("10.1126/science.169.3946.635")
+```
+
+The function accepts a DOI in several forms, which it normalizes automatically (spaces removed, lowercase, prefixes stripped):
+
+```{r doi-exists-formats, eval = FALSE}
+check_doi_exists("10.1126/science.169.3946.635")
+check_doi_exists("https://doi.org/10.1126/science.169.3946.635")
+check_doi_exists("doi:10.1126/science.169.3946.635")
+```
+
+It is **vectorized**: it accepts a vector of DOIs and returns a vector of the same length, in the same order.
+
+```{r doi-exists-vector, eval = FALSE}
+dois <- c(
+  "10.1126/science.169.3946.635",    # real DOI
+  "10.9999/this-doi-does-not-exist", # valid syntax, nonexistent DOI
+  "not_a_doi_at_all",                # string that is not a DOI
+  NA                                 # missing value
+)
+
+check_doi_exists(dois)
+#> [1]  TRUE FALSE    NA    NA
+```
+
+With `named = TRUE`, the elements of the result carry the normalized DOI as a name, which makes reading easier:
+
+```{r doi-exists-named, eval = FALSE}
+check_doi_exists(dois, named = TRUE)
+```
+
+## Interpreting the result
+
+| Value | Meaning |
+|:--|:--|
+| `TRUE` | The DOI exists and resolves correctly |
+| `FALSE` | The DOI is syntactically valid, but it **does not exist**, or the request **failed** (network unavailable, timeout) |
+| `NA` | The element is missing or does not have the form of a DOI: **no request is sent** |
+
+::: {.encadre}
+**Beware of the `FALSE` value.** It covers two situations: a genuinely nonexistent DOI, and a technical failure of the request (for example a dropped connection). Before concluding that a DOI is false, make sure your connection is working, for example by first testing a known DOI such as `10.1126/science.169.3946.635`, which should return `TRUE`.
+:::
+
+## Application to the test set
+
+On the references of `ref_test.txt`, the extracted DOIs can be checked without going through OpenAlex:
+
+```{r doi-exists-test, eval = TRUE}
+doi_check <- data.frame(
+  ref_n = refs $ ref_n,
+  Categorie = design $ Categorie,
+  doi = refs $ doi,
+  doi_exists = check_doi_exists(refs $ doi),
+  stringsAsFactors = FALSE
+)
+
+doi_check |>
+  kable_site(
+    caption = "Existence of the test set DOIs",
+    col.names = c("ref_n", "Category", "Extracted DOI", "DOI exists?")
+  )
+```
+
+We expect:
+
+-   `TRUE` for the real DOIs of categories 1 and 2 (including the **misattributed** ones of category 2, which do exist);
+-   `FALSE` for the fabricated DOIs of categories 3 and 4;
+-   `NA` for references **without a DOI** (books, conference papers, chapters).
+
+::: {.encadre}
+**Limitations of this check.**
+
+-   It verifies the **existence** of the DOI, not its **consistency** with the cited reference: that is the role of `validate_references()`.
+-   Requests are sent **one at a time**, with a maximum timeout of 10 seconds each and **no retry** on failure. On a long list, processing can therefore be slow, and a temporary service outage can produce false `FALSE` values.
+:::
+
+In a pipeline, `check_doi_exists()` can serve as a **pre-filter** to quickly identify nonexistent DOIs, before launching the more costly full validation.
+
+# Complete pipeline
+
+To recap, here is the full sequence of a workflow, from preparation to selection of the best candidate:
+
+```{r pipeline-full, eval = FALSE}
+# 1. Prepare the references
+refs <- parse_apa_text(
+  system.file("extdata", "ref_test.txt", package = "CheckrefR"),
+  as_ref_df = TRUE
+)
+# (or grobid_process_file() / grobid_process_files() for the GROBID route)
+
+# 2. Tune the validation (optional)
+checkrefr_set_defaults(doi_email = "me@example.com")
+
+# 3. Validate
+validated <- validate_references(refs)
+
+# 4. Keep the best candidate for each reference
+best <- deduplicate_references(validated)
+```

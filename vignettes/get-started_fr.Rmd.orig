@@ -1,0 +1,535 @@
+---
+title: "Get started"
+output:
+  rmarkdown::html_vignette:
+    number_sections: true
+vignette: >
+  %\VignetteIndexEntry{Get started}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{css, echo=FALSE}
+.encadre {
+  border: 2px solid #31708f;
+  border-radius: 6px;
+  padding: 10px 15px;
+  margin: 15px 0;
+  background-color: #f9fcfe;
+}
+
+table.table caption {
+  caption-side: top;
+}
+
+
+details.refs-test {
+  border: 2px solid #31708f;
+  border-radius: 6px;
+  margin: 15px 0;
+  background-color: #f9fcfe;
+}
+
+details.refs-test > summary {
+  cursor: pointer;
+  padding: 10px 15px;
+  font-weight: bold;
+  color: #ffffff;
+  background-color: #31708f;
+  border-radius: 4px;
+  list-style: none;
+}
+
+details.refs-test > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.refs-test > summary::before {
+  content: "▶ ";
+}
+
+details.refs-test[open] > summary::before {
+  content: "▼ ";
+}
+
+details.refs-test > summary:hover {
+  background-color: #285a75;
+}
+
+details.refs-test > .refs-contenu {
+  padding: 5px 20px 15px 20px;
+}
+
+```
+
+```{r setup-options, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  message = FALSE,
+  warning = FALSE
+)
+
+# Dossier où sont conservés les résultats pré-calculés (copiés avec la vignette)
+cache_dir <- "cache_get-started"
+dir.create(cache_dir, showWarnings = FALSE, recursive = TRUE)
+
+cache_file <- function(name) file.path(cache_dir, paste0(name, ".rds"))
+```
+
+```{r setup-packages, include = FALSE}
+library(CheckrefR)
+library(dplyr)
+library(knitr)
+library(kableExtra)
+```
+
+```{r setup-helper-table, include = FALSE}
+# Fonction utilitaire : mise en forme homogène des tableaux du site
+kable_site <- function(x, caption = NULL, ...) {
+  x |>
+    kbl(caption = caption, booktabs = TRUE, ...) |>
+    kable_styling(
+      bootstrap_options = c("striped", "hover", "condensed", "responsive"),
+      full_width = FALSE,
+      font_size = 13,
+      html_font = NULL
+    ) |>
+    row_spec(0, extra_css = "")  # facultatif
+}
+```
+
+<img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental" />
+
+# Introduction
+
+## Objectifs de CheckrefR
+
+**CheckrefR** poursuit deux objectifs complémentaires.
+
+### Un client R pour GROBID
+
+[GROBID](https://github.com/kermitt2/grobid) (*GeneRation Of BIbliographic Data*) est un modèle d'apprentissage automatique capable de lire un document (typiquement un PDF d'article scientifique) ou une liste de références brutes, et d'en extraire une information **structurée** : titre, auteurs, année, revue, DOI, etc.
+
+GROBID fonctionne comme un **service** : un programme qui tourne quelque part (sur votre ordinateur ou sur un serveur) et auquel on envoie des fichiers pour obtenir un résultat. CheckrefR joue le rôle de **client** : il envoie vos fichiers au service, récupère la réponse et la transforme en tableaux R directement exploitables.
+
+Deux modes d'utilisation sont possibles :
+
+| Mode | Principe | Quand l'utiliser ? |
+|:--|:--|:--|
+| **Local** (`"docker"`) | GROBID tourne sur *votre* machine, dans un conteneur Docker (une « boîte » isolée qui embarque le programme). | **Recommandé** : rapide, privé, sans limite de volume. |
+| **Distant** (`"remote"`) | Les fichiers sont envoyés à un serveur GROBID accessible par Internet. | Dépannage, premiers essais, ou si vous disposez de votre propre serveur. |
+
+::: {.encadre}
+⚠️ **À retenir.** Les serveurs distants configurés par défaut dans le package sont des **serveurs de démonstration** : partagés, parfois indisponibles ou lents, et sans garantie de confidentialité pour vos documents.
+
+Il est préférable d'**utiliser GROBID localement** ou de **disposer de votre propre serveur**. Le package permet de configurer l'adresse du serveur (voir `grobid_remote_connect()` plus bas).
+:::
+
+Le package propose aussi une voie indépendante de GROBID : la fonction `parse_apa_text()`, fondée sur des **expressions régulières**, qui analyse des références au **format APA 7**. Sa sortie peut ensuite être validée avec le même pipeline.
+
+### La vérification de références bibliographiques
+
+Le second volet du package consiste à **vérifier que des références bibliographiques existent réellement** et qu'elles sont correctement décrites. Les références extraites par GROBID sont confrontées à la base ouverte [OpenAlex](https://openalex.org/) et/ou à la résolution des DOI (`doi.org`).
+
+
+## Pourquoi vérifier ? Le contexte des IA génératives
+
+CheckrefR a notamment été pensé pour le contexte des **intelligences artificielles génératives (IAg)**. Les grands modèles de langage (LLMs) peuvent produire des bibliographies d'aspect parfaitement crédible, dont la qualité est très variable. On peut rencontrer, de façon générale :
+
+-   des **hallucinations pures et simples** : la référence n'existe pas (titre, auteurs et revue inventés) ;
+-   des **références exactes** : la référence existe et toutes ses informations sont correctes ;
+-   des **références approximatives** : une œuvre réelle mais avec des erreurs (année, auteurs, titre déformé, revue incorrecte) ;
+-   des **DOI hallucinés associés à une référence réelle** : le texte de la référence correspond à un vrai article, mais le DOI est faux ou renvoie vers une autre publication ;
+-   l'inverse : un **DOI réel associé à une référence erronée** ;
+-   des **cas ambigus**, où la référence est *partiellement* exacte et où il est difficile de trancher.
+
+C'est cette diversité qui rend nécessaire une vérification qui ne se limite pas à un simple « le DOI existe / n'existe pas », mais qui compare l'ensemble des éléments (titre, auteurs, année, DOI).
+
+::: {.encadre}
+⚠️ Avertissement : version expérimentale
+
+-   La version actuelle du package est **expérimentale**.
+-   Le **calcul des scores de correspondance** (titre, auteurs, année, score global) fait actuellement l'objet d'un travail et d'une préparation plus poussés que la méthode actuellement implémentée, qui présente **des limites**.
+-   Des **tests plus formels** sur cette question seront réalisés à l'avenir.
+-   Les statuts et scores doivent donc être lus comme des **aides à la décision** et non comme un verdict : une vérification manuelle reste nécessaire, notamment pour les cas ambigus ou partiellement exacts.
+:::
+
+## Prérequis : installer Docker (mode local)
+
+Le mode local, recommandé plus haut, repose sur **Docker**. Il s'agit d'un logiciel qui exécute des programmes dans des « boîtes » isolées (les *conteneurs*), sans rien installer d'autre sur votre machine. GROBID est distribué sous cette forme : Docker est donc nécessaire **uniquement si vous souhaitez l'utiliser en local**. Sans Docker, le mode distant reste disponible (voir les réserves ci-dessus).
+
+::: {.encadre}
+🐳 Installer Docker selon votre système
+
+-   **Windows** : installer [Docker Desktop](https://www.docker.com/products/docker-desktop/). Il s'appuie sur WSL 2, que l'installateur propose d'activer. Un redémarrage peut être demandé.
+-   **macOS** : installer [Docker Desktop](https://www.docker.com/products/docker-desktop/) en choisissant la version adaptée à votre processeur (Apple Silicon ou Intel).
+-   **Linux** : installer Docker Engine via le gestionnaire de paquets de votre distribution (Debian/Ubuntu, Fedora/RHEL…), démarrer le service, et ajouter votre utilisateur au groupe `docker` pour éviter d'utiliser `sudo`.
+
+Voir la [documentation officielle](https://docs.docker.com/engine/install/).
+
+`grobid_check_requirements()` vous indique s'il est détecté, et `grobid_install_guide()` fournit des instructions adaptées à votre système (voir plus bas).
+:::
+
+# Mise en route de GROBID
+
+## Vue d'ensemble
+
+La mise en route se déroule en trois temps :
+
+1.  **Diagnostiquer** votre environnement : `grobid_check_requirements()` ;
+2.  **S'installer** si nécessaire, avec un guide interactif : `grobid_install_guide()` ;
+3.  **Démarrer GROBID**, en local avec `grobid_docker_start()` ou en se connectant à un serveur distant avec `grobid_remote_connect()`.
+
+Une fois GROBID disponible, les documents sont traités avec `grobid_process_file()` et `grobid_process_files()` (section suivante).
+
+## Étape 1 : vérifier son environnement avec `grobid_check_requirements()`
+
+Cette fonction diagnostique votre système : système d'exploitation, accès à Internet, présence et état de Docker, conteneur GROBID éventuellement actif, accessibilité des serveurs distants par défaut. Elle recommande ensuite un mode d'utilisation.
+
+```{r requirements-check, message=TRUE}
+req <- grobid_check_requirements()
+```
+
+Le résultat est aussi retourné (de façon invisible) sous forme de liste :
+
+```{r requirements-recommended-mode}
+req$recommended_mode
+```
+
+La valeur recommandée est `"docker"` si Docker est installé, `"remote"` si Docker est absent mais qu'un serveur distant répond.
+
+| Argument | Rôle |
+|:--|:--|
+| `check_docker` | Vérifie Docker et un éventuel conteneur GROBID actif. |
+| `check_remote` | Teste les serveurs distants par défaut. |
+| `test_all_urls` | `TRUE` : teste toutes les adresses ; `FALSE` : s'arrête à la première qui répond (plus rapide). |
+| `verbose` | Affiche (ou non) le diagnostic dans la console. |
+
+```{r requirements-quiet, eval = FALSE}
+# Diagnostic silencieux, sans test de Docker
+req <- grobid_check_requirements(verbose = FALSE, check_docker = FALSE)
+req$recommended_mode
+```
+
+## Étape 2 : être guidé dans l'installation avec `grobid_install_guide()`
+
+Si Docker n'est pas installé, `grobid_install_guide()` affiche un **guide pas à pas adapté à votre système**, puis vous invite à relancer le diagnostic. C'est la version interactive de l'encadré de la section précédente.
+
+```{r install-guide, message=TRUE}
+# Utilise le diagnostic précédent (sinon, il est relancé automatiquement)
+grobid_install_guide(requirements = req)
+```
+
+## Étape 3 : démarrer GROBID
+
+Deux options, selon le mode retenu.
+
+### Mode local : `grobid_docker_start()`
+
+Cette fonction lance GROBID dans un conteneur Docker sur votre machine.
+
+```{r docker-start-default2, eval = FALSE}
+grobid_docker_start()
+```
+
+::: {.encadre}
+**Premier lancement : téléchargement de l'image.** La première fois, l'*image* du modèle GROBID (le « paquet » contenant le programme et ses modèles) doit être téléchargée sur votre machine, ce qui peut **prendre du temps** (plusieurs Go). C'est également le cas **pour chaque nouveau modèle ou nouvelle version** qui n'a pas encore été téléchargé. Les lancements suivants sont beaucoup plus rapides.
+:::
+
+Réglages disponibles :
+
+| Argument | Rôle | Valeur par défaut |
+|:--|:--|:--|
+| `model_type` | Modèle utilisé : `"crf"` (léger) ou `"full"` (apprentissage profond, plus précis mais plus lourd) | non défini (image standard) |
+| `grobid_version` | Version de GROBID | `"0.9.0"` |
+| `port` | Port local sur lequel le service est exposé | `8070` |
+| `max_ram` | Mémoire maximale allouée (ex. `"4g"`, `"8g"`) | `"4g"` |
+| `pull` | Force le téléchargement/mise à jour de l'image | `FALSE` |
+| `timeout_ready` | Temps d'attente maximal avant que GROBID soit prêt | 120 s |
+| `docker_image` | Nom de base de l'image Docker | `"lfoppiano/grobid:"` |
+| `verbose` | Messages de progression | `TRUE` |
+
+```{r docker-start-custom2, eval = FALSE}
+# Modèle complet, davantage de mémoire, port personnalisé
+grobid_docker_start(model_type = "full", max_ram = "8g", port = 8080)
+
+# Autre version de GROBID
+grobid_docker_start(grobid_version = "0.8.1")
+```
+
+Si un conteneur compatible (même image, version, modèle et port) est déjà actif, il est simplement réutilisé ; sinon, il est remplacé.
+
+### Mode distant : `grobid_remote_connect()`
+
+Cette fonction teste puis mémorise un serveur GROBID distant pour la session R en cours.
+
+```{r remote-connect-default2, eval = FALSE}
+# Serveurs de démonstration par défaut (modèle crf)
+grobid_remote_connect()
+```
+
+| Argument | Rôle |
+|---|-------|
+| `url` | Adresse de **votre propre serveur** GROBID. Si elle est fournie, `model_type` est ignoré. |
+| `model_type` | `"crf"` ou `"full"` : choisit parmi les serveurs de démonstration par défaut. |
+| `timeout` | Délai maximal de connexion (120 s par défaut). |
+| `verbose` | Messages de progression. |
+
+```{r remote-connect-custom2, eval = FALSE}
+# Votre propre serveur (recommandé si vous n'utilisez pas Docker)
+grobid_remote_connect(url = "https://mon-serveur-grobid.exemple.org")
+
+# Serveurs de démonstration, modèle "full"
+grobid_remote_connect(model_type = "full")
+```
+
+::: {.encadre}
+**Rappel.** Les serveurs par défaut sont des serveurs de **démonstration** : évitez d'y envoyer des documents sensibles ou volumineux.
+:::
+
+### Ces deux fonctions sont facultatives
+
+**Vous pouvez ignorer cette étape 3.** `grobid_docker_start()` et `grobid_remote_connect()` sont utiles pour **régler finement** la configuration (mémoire, port, version, serveur personnel), mais leur appel manuel n'est pas obligatoire.
+
+Les fonctions de traitement `grobid_process_file()` et `grobid_process_files()` les appellent d'elles-mêmes : il suffit d'y renseigner le `mode` (`"docker"` ou `"remote"`) et le `model_type` (`"crf"` ou `"full"`). Si le serveur n'est pas déjà actif, il est alors démarré ou joint automatiquement.
+
+# Traiter des documents avec GROBID
+
+## Les fonctions `grobid_process_file()` et `grobid_process_files()`
+
+-   `grobid_process_file()` traite **un seul** fichier ;
+-   `grobid_process_files()` traite **plusieurs** fichiers (éventuellement en parallèle) et regroupe les résultats dans un seul tableau.
+
+**Paramètres principaux :**
+
+| Argument | Rôle |
+|---|--------|
+| `file` / `files` | Chemin(s) du ou des fichiers à traiter. |
+| `service` | Type de traitement GROBID (voir ci-dessous). |
+| `params` | Options supplémentaires transmises à GROBID, p. ex. `list(consolidateCitations = 1)`. |
+| `output_format` | `"parsed"` (tableau R, défaut) ou `"raw"` (XML brut). |
+| `output_dir` | Dossier où sauvegarder les fichiers XML (facultatif). |
+| `mode` | `"docker"` ou `"remote"` : **démarre ou connecte automatiquement** le serveur si nécessaire. |
+| `model_type` | `"crf"` ou `"full"` : modèle utilisé. |
+| `parallel`, `n_workers` | *(`grobid_process_files()`)* traitement en parallèle. |
+| `on_error` | *(`grobid_process_files()`)* `"warn"` (continue) ou `"stop"`. |
+
+**Services disponibles :**
+
+| `service` | Entrée | Contenu extrait |
+|:--|:--|:--|
+| `"processFulltextDocument"` | PDF | Texte complet structuré et références |
+| `"processHeaderDocument"` | PDF | En-tête (titre, auteurs, résumé…) |
+| `"processReferences"` | PDF | Liste des références bibliographiques |
+| `"processCitationList"` | fichier `.txt` ou vecteur de textes | Analyse de références brutes (une par ligne) |
+
+## Illustration avec le fichier d'exemple `ref_test.txt`
+
+Le package fournit un fichier de test dans son dossier `extdata`. Il contient une liste de références brutes, que l'on peut traiter avec le service `"processCitationList"`.
+
+```{r example-locate-file}
+txt_file <- system.file("extdata", package = "CheckrefR") |>
+  list.files(pattern = "ref_test", full.names = TRUE)
+
+basename(txt_file)
+```
+
+**Aperçu du contenu brut :**
+
+```{r example-preview-raw, results='asis'}
+readLines(txt_file, warn = FALSE) |>
+  head(6) |> writeLines(sep = "\n\n")
+```
+
+---
+
+## Traitement du fichier. 
+
+Ici, le mode et le modèle sont indiqués directement : le serveur est démarré ou joint automatiquement, sans appel préalable à `grobid_docker_start()` ou `grobid_remote_connect()`.
+
+```{r execution-et-sauvgarde, include=FALSE, eval=FALSE}
+# --- À EXÉCUTER UNE SEULE FOIS, manuellement, avec Docker actif ---
+# Ce chunk n'est pas évalué lors de la construction du site (eval = FALSE).
+grobid_res <- grobid_process_file(
+  file = txt_file,
+  service = "processCitationList",
+  mode = "docker",        # ou "remote"
+  model_type = "crf",
+  output_format = "parsed"
+)
+
+saveRDS(grobid_res, cache_file("grobid_res"))
+```
+
+
+```{r chargement-grobid_res, include=FALSE}
+refs <- readRDS(cache_file("grobid_res"))
+```
+
+
+```{r example-process-file, eval=FALSE}
+refs <- grobid_process_file(
+  file = txt_file,
+  service = "processCitationList",
+  mode = "docker",        # ou "remote"
+  model_type = "crf",
+  output_format = "parsed"
+)
+```
+
+Le résultat est un tableau (*tibble*) avec une ligne par référence :
+
+```{r example-refs-dim, }
+dim(refs)
+names(refs)
+```
+
+```{r example-refs-table, }
+refs |>
+  select(ref_n, title, authors, year, journal, doi) |>
+  head(8) |>
+  kable_site(caption = "Références extraites par GROBID (aperçu)") |>
+  column_spec(2, width = "22em")
+```
+
+Pour **plusieurs fichiers**, on utilise `grobid_process_files()`, qui ajoute une colonne `source_file` pour identifier l'origine de chaque ligne. Exemple avec les PDF éventuellement disponibles dans le package :
+
+```{r example-process-files, eval = FALSE}
+pdf_files <- system.file("extdata", package = "CheckrefR") |>
+  list.files(pattern = "\\.pdf$", full.names = TRUE)
+
+refs_pdf <- grobid_process_files(
+  files = pdf_files,
+  service = "processReferences",
+  mode = "docker",
+  output_format = "parsed"
+)
+```
+
+
+# Valider les références
+
+Une fois les références extraites, on peut vérifier leur existence et leur exactitude.
+
+## Comparer à OpenAlex : `validate_references()`
+
+`validate_references()` prend en entrée le tableau de références (au minimum les colonnes `title`, `authors_list`, `doi`, `year`, `ref_n`, `source_file`) et suit une procédure en plusieurs temps :
+
+1.  **vérification des DOI** auprès d'OpenAlex ;
+2.  pour les DOI non résolus ou incohérents, **interrogation de `doi.org`** ;
+3.  si nécessaire, **recherche par titre** ;
+4.  calcul de **scores de correspondance** (titre, auteurs, année) et d'un score global ;
+5.  conservation de un à `max_candidates` candidats par référence (3 par défaut).
+
+```{r validate-references}
+results <- validate_references(refs, verbose = TRUE)
+```
+
+Principales colonnes du résultat :
+
+| Colonne | Contenu |
+|:--|:--|
+| `input_title`, `input_doi`, `input_year`, `input_authors` | Informations de la référence **telle qu'extraite**. |
+| `oa_title`, `oa_doi`, `oa_year`, `oa_authors` | Informations de la **notice OpenAlex** candidate. |
+| `score_title`, `score_authors`, `score_year` | Scores de similarité (0 à 1). |
+| `score_global` | Score pondéré : 60 % titre, 30 % auteurs, 10 % année. |
+| `n_candidates` | Nombre de candidats retenus pour cette référence. |
+| `match_status` | Statut de la correspondance (voir ci-dessous). |
+
+```{r validate-results-table}
+results |>
+  select(ref_n, input_title, oa_title, score_title, score_authors,
+         score_year, score_global, match_status) |>
+  mutate(across(starts_with("score_"), ~ round(.x, 2))) |>
+  head(10) |>
+  kable_site(caption = "Résultats de validation (aperçu)") |>
+  column_spec(c(2, 3), width = "16em")
+```
+
+Statuts les plus fréquents :
+
+| `match_status` | Signification |
+|---|----|
+| `confirmed_with_doi` | DOI confirmé, avec titre et année concordants. |
+| `partial_with_doi` | DOI trouvé, mais correspondance partielle. |
+| `doi_mismatch` | Le DOI existe, mais désigne une autre publication. |
+| `doi_not_found` | DOI introuvable ou inexistant. |
+| `title_search` | Correspondance trouvée par recherche sur le titre. |
+| `no_match` | Aucun candidat suffisamment proche. |
+
+```{r validate-status-count}
+results |>
+  count(match_status, name = "n_lignes", sort = TRUE) |>
+  kable_site(caption = "Répartition des statuts de correspondance")
+```
+
+
+::: {.encadre}
+Les seuils (score minimal de 0,60 ; correspondance « probable » à partir de 0,85 ; confirmation par DOI avec un score de titre d'au moins 0,90 et une année identique) sont ceux de la **version expérimentale**. Voir l'avertissement en introduction.
+::: 
+
+## Garder la meilleure correspondance : `deduplicate_references()`
+
+Comme `validate_references()` peut renvoyer plusieurs candidats par référence, `deduplicate_references()` ne conserve que **la meilleure ligne** (score global le plus élevé) pour chaque couple `source_file` / `ref_n`. L'ordre des références est préservé.
+
+```{r deduplicate-references}
+best <- deduplicate_references(results, verbose = TRUE)
+```
+
+```{r deduplicate-table}
+best |>
+  select(ref_n, input_title, oa_doi, score_global, match_status) |>
+  mutate(score_global = round(score_global, 2)) |>
+  kable_site(caption = "Une ligne par référence (meilleure correspondance)") |>
+  column_spec(2, width = "22em")
+```
+
+# Alternative sans GROBID : références au format APA 7
+
+Pour des références déjà rédigées en **APA 7** (`Auteurs (année). Titre. Revue, volume(numéro), pages. DOI`), `parse_apa_text()` les analyse par expressions régulières, sans serveur GROBID. L'option `as_ref_df = TRUE` produit un tableau directement compatible avec `validate_references()`.
+
+```{r apa-parse-file}
+txt_files <- system.file("extdata", package = "CheckrefR") |>
+  list.files(pattern = "\\.txt$", full.names = TRUE)
+
+apa  <- txt_files[2]
+```
+
+<details class="refs-test">
+<summary>Cliquer pour afficher la liste détaillée des références utilisées pour le test de la fonction validate_refrences</summary>
+
+<div class="refs-contenu">
+
+```{r ref-test, results='asis', warning=FALSE}
+readLines(apa) |>  writeLines(sep = "\n\n")
+```
+
+</div>
+
+</details>
+
+
+
+```{r apa-table}
+apa_refs <- parse_apa_text(apa, as_ref_df = TRUE)
+
+apa_refs |>
+  select(authors, title, year, doi) |>
+  kable_site(caption = "Références APA 7 analysées par expressions régulières")
+```
+
+
+::: {.encadre}
+Cette méthode suppose un format strictement conforme : année sous la forme `(AAAA)`, titre terminé au premier point suivant l'année, DOI sous forme d'URL `doi.org` en fin de référence. Les références non conformes peuvent produire des valeurs manquantes ou des extractions partielles, sans message d'erreur.
+:::
+
+# Pour aller plus loin
+
+-   Consulter la référence des fonctions pour le détail de chaque argument ;
+-   `grobid_server_info()` et `grobid_docker_stop()` permettent de consulter l'état du serveur actif et d'arrêter le conteneur local ;
+-   `oa_matching_info()` décrit les paramètres de correspondance avec OpenAlex.
+
+
+
+

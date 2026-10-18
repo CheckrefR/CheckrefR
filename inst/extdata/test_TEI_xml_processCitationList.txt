@@ -1,0 +1,344 @@
+<TEI xmlns="http://www.tei-c.org/ns/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" 
+ xmlns:mml="http://www.w3.org/1998/Math/MathML">
+	<teiHeader/>
+	<text>
+		<front/>
+		<body/>
+		<back>
+			<div>
+				<listBibl>
+<biblStruct status="extracted" xml:id="b0">
+	<analytic>
+		<title level="a" type="main">The &quot;what&quot; and &quot;why&quot; of goal pursuits: Human needs and the self-determination of behavior</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">L</forename><surname>Deci</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Ryan</surname></persName>
+		</author>
+		<idno type="DOI">10.1207/S15327965PLI1104_01</idno>
+		<ptr target="https://doi.org/10.1207/S15327965PLI1104_01" />
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Inquiry</title>
+		<imprint>
+			<biblScope unit="volume">11</biblScope>
+			<biblScope unit="issue">4</biblScope>
+			<biblScope unit="page" from="227" to="268" />
+			<date type="published" when="2000">2000</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b1">
+	<analytic>
+		<title level="a" type="main">Efficient estimation of word representations in vector space</title>
+		<author>
+			<persName><forename type="first">T</forename><surname>Mikolov</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">K</forename><surname>Chen</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">G</forename><surname>Corrado</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Dean</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Proceedings of the 1st International Conference on Learning Representations</title>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Bengio</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">Y</forename><surname>Lecun</surname></persName>
+		</editor>
+		<meeting>the 1st International Conference on Learning Representations</meeting>
+		<imprint>
+			<publisher>ICLR</publisher>
+			<date type="published" when="2013">2013</date>
+			<biblScope unit="page" from="1" to="12" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b2">
+	<monogr>
+		<author>
+			<persName><forename type="first">A</forename><surname>Vaswani</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Shazeer</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">N</forename><surname>Parmar</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">J</forename><surname>Uszkoreit</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><surname>Jones</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">N</forename><surname>Gomez</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">Ł</forename><surname>Kaiser</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">I</forename><surname>Polosukhin</surname></persName>
+		</author>
+		<idno type="DOI">10.48550/arXiv.1706.03762</idno>
+		<ptr target="https://doi.org/10.48550/arXiv.1706.03762" />
+		<title level="m">Attention is all you need</title>
+		<imprint>
+			<date type="published" when="2017">2017</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b3">
+	<monogr>
+		<title level="m" type="main">Thinking, fast and slow</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kahneman</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="2011">2011</date>
+			<publisher>Farrar, Straus and Giroux</publisher>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b4">
+	<analytic>
+		<title level="a" type="main">The need to belong: Desire for interpersonal attachments as a fundamental human motivation</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">F</forename><surname>Baumeister</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Leary</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Social psychology and human nature</title>
+		<editor>
+			<persName><forename type="first">R</forename><forename type="middle">F</forename><surname>Baumeister</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Wadsworth</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="1995">1995</date>
+			<biblScope unit="page" from="497" to="529" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b5">
+	<analytic>
+		<title level="a" type="main">Self-efficacy: Toward a unifying theory of behavioral change</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Bandura</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0003-066X.55.1.5</idno>
+		<ptr target="https://doi.org/10.1037/0003-066X.55.1.5" />
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Review</title>
+		<imprint>
+			<biblScope unit="volume">84</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="191" to="215" />
+			<date type="published" when="1977">1977</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b6">
+	<analytic>
+		<title level="a" type="main">Development and validation of brief measures of positive and negative affect: The PANAS scales</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Watson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">L</forename><forename type="middle">A</forename><surname>Clark</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tellegen</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/0022-3514.84.4.822</idno>
+		<ptr target="https://doi.org/10.1037/0022-3514.84.4.822" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Personality and Social Psychology</title>
+		<imprint>
+			<biblScope unit="volume">54</biblScope>
+			<biblScope unit="issue">6</biblScope>
+			<biblScope unit="page" from="1063" to="1070" />
+			<date type="published" when="1988">1988</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b7">
+	<analytic>
+		<title level="a" type="main">The necessary and sufficient conditions of therapeutic personality change</title>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">R</forename><surname>Rogers</surname></persName>
+		</author>
+		<idno type="DOI">10.1037/h9999999</idno>
+		<ptr target="https://doi.org/10.1037/h9999999" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Consulting Psychology</title>
+		<imprint>
+			<biblScope unit="volume">21</biblScope>
+			<biblScope unit="issue">2</biblScope>
+			<biblScope unit="page" from="95" to="103" />
+			<date type="published" when="1957">1957</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b8">
+	<analytic>
+		<title level="a" type="main">Judgment under uncertainty: Heuristics and biases</title>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tversky</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kahneman</surname></persName>
+		</author>
+		<idno type="DOI">10.1126/science.1974.tk421</idno>
+		<ptr target="https://doi.org/10.1126/science.1974.tk421" />
+	</analytic>
+	<monogr>
+		<title level="j">Science</title>
+		<imprint>
+			<biblScope unit="volume">185</biblScope>
+			<biblScope unit="issue">4157</biblScope>
+			<biblScope unit="page" from="1124" to="1131" />
+			<date type="published" when="1974">1974</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b9">
+	<analytic>
+		<title level="a" type="main">L&apos;influence quantique de la pensée positive sur la mécanique cellulaire réversible</title>
+		<author>
+			<persName><forename type="first">J.-M</forename><surname>Dupont</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tremblay</surname></persName>
+		</author>
+		<idno type="DOI">10.9999/fake.impossible.2019</idno>
+		<ptr target="https://doi.org/10.9999/fake.impossible.2019" />
+	</analytic>
+	<monogr>
+		<title level="j">Journal of Impossible Psychology</title>
+		<imprint>
+			<biblScope unit="volume">45</biblScope>
+			<biblScope unit="issue">12</biblScope>
+			<biblScope unit="page" from="3001" to="3045" />
+			<date type="published" when="2019">2019</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b10">
+	<analytic>
+		<title level="a" type="main">A study of nothing in particular that somehow got published</title>
+		<author>
+			<persName><forename type="first">A</forename><forename type="middle">B</forename><surname>Smith</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">C</forename><forename type="middle">D</forename><surname>Johnson</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">F</forename><surname>Williams</surname></persName>
+		</author>
+		<idno type="DOI">10.0000/null.void</idno>
+		<ptr target="https://doi.org/10.0000/null.void" />
+	</analytic>
+	<monogr>
+		<title level="j">International Journal of Studies About Studies</title>
+		<imprint>
+			<biblScope unit="volume">0</biblScope>
+			<biblScope unit="issue">0</biblScope>
+			<biblScope unit="page" from="1" to="1" />
+			<date type="published" when="2021">2021</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b11">
+	<monogr>
+		<title level="m" type="main">Thinking, slow and fast</title>
+		<author>
+			<persName><forename type="first">D</forename><surname>Kahneman</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">A</forename><surname>Tversky</surname></persName>
+		</author>
+		<imprint>
+			<date type="published" when="1984">1984</date>
+			<pubPlace>Farrar, Straus and Giroux</pubPlace>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b12">
+	<analytic>
+		<title level="a" type="main">The &quot;how&quot; and &quot;why&quot; of goal attainment: Human motivation and self-determination reconsidered</title>
+		<author>
+			<persName><forename type="first">E</forename><forename type="middle">L</forename><surname>Deci</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">M</forename><surname>Ryan</surname></persName>
+		</author>
+		<idno type="DOI">10.1207/S15327965PLI1203_04</idno>
+		<ptr target="https://doi.org/10.1207/S15327965PLI1203_04" />
+	</analytic>
+	<monogr>
+		<title level="j">Psychological Inquiry</title>
+		<imprint>
+			<biblScope unit="volume">12</biblScope>
+			<biblScope unit="issue">3</biblScope>
+			<biblScope unit="page" from="315" to="350" />
+			<date type="published" when="2001">2001</date>
+		</imprint>
+	</monogr>
+</biblStruct>
+
+<biblStruct status="extracted" xml:id="b13">
+	<analytic>
+		<title level="a" type="main">The need to belong: Desire for social bonding as a fundamental human need</title>
+		<author>
+			<persName><forename type="first">R</forename><forename type="middle">F</forename><surname>Baumeister</surname></persName>
+		</author>
+		<author>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Leary</surname></persName>
+		</author>
+	</analytic>
+	<monogr>
+		<title level="m">Human nature and social psychology</title>
+		<editor>
+			<persName><forename type="first">R</forename><forename type="middle">F</forename><surname>Baumeister</surname></persName>
+		</editor>
+		<editor>
+			<persName><forename type="first">M</forename><forename type="middle">R</forename><surname>Leary</surname></persName>
+		</editor>
+		<meeting><address><addrLine>Wadsworth</addrLine></address></meeting>
+		<imprint>
+			<date type="published" when="1996">1996</date>
+			<biblScope unit="page" from="495" to="530" />
+		</imprint>
+	</monogr>
+</biblStruct>
+
+				</listBibl>
+			</div>
+		</back>
+	</text>
+</TEI>

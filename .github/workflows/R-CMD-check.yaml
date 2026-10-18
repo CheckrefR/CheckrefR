@@ -1,0 +1,93 @@
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * 1" # Weekly on Monday at 03:00 UTC
+
+name: R-CMD-check
+
+permissions: read-all
+
+env:
+  GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+  R_KEEP_PKG_SOURCE: yes
+  # Override this repository variable to use a different Grobid image.
+  GROBID_TEST_IMAGE: "lfoppiano/grobid:0.9.0-crf"
+
+jobs:
+  R-CMD-check:
+    if: true  # TEMPORAIRE : désactivé pour ne lancer que les integration tests
+    runs-on: ${{ matrix.config.os }}
+    name: ${{ matrix.config.os }} (R ${{ matrix.config.r }})
+    env:
+      # Integration tests are deliberately skipped in the cross-platform check.
+      RUN_INTEGRATION_TESTS: "false"
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {os: macos-latest, r: 'release'}
+          - {os: windows-latest, r: 'release'}
+          - {os: ubuntu-latest, r: 'devel'}
+          - {os: ubuntu-latest, r: 'release'}
+          - {os: ubuntu-latest, r: 'oldrel-1'}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: ${{ matrix.config.r }}
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck, any::testthat, any::mockery, any::withr
+          needs: check
+
+      - uses: r-lib/actions/check-r-package@v2
+        with:
+          upload-snapshots: true
+
+  integration-tests:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule' ||
+      (github.event_name == 'push' && contains(github.event.head_commit.message, '[integration]'))
+    runs-on: ubuntu-latest
+    name: Integration tests (R release)
+    timeout-minutes: 30
+    env:
+      RUN_INTEGRATION_TESTS: "true"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: 'release'
+          use-public-rspm: true
+
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::testthat, any::mockery, any::withr, any::pkgload
+          needs: check
+
+      - name: Install package (required by future multisession workers)
+        run: R CMD INSTALL .
+
+      - name: Pull Grobid image
+        run: docker pull "$GROBID_TEST_IMAGE"
+
+      - name: Run test suite with integration enabled
+        run: |
+          Rscript -e 'pkgload::load_all("."); testthat::test_dir("tests/testthat", stop_on_failure = TRUE)'
+
+      - name: Show Docker state on failure
+        if: failure()
+        run: docker ps -a
+
+      - name: Cleanup stray containers
+        if: always()
+        run: docker ps -aq --filter "ancestor=$GROBID_TEST_IMAGE" | xargs -r docker rm --force

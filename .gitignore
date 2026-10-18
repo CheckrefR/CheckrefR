@@ -1,0 +1,11 @@
+.Rproj.user
+.Rhistory
+.RData
+.httr-oauth
+.DS_Store
+.quarto
+all_function.R
+architecture_fonction_OA_verif.html
+test.R
+inst/doc
+docs
