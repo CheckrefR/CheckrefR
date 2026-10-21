@@ -1,9 +1,6 @@
 on:
   push:
-  pull_request:
   workflow_dispatch:
-  schedule:
-    - cron: "0 3 * * 1" # Weekly on Monday at 03:00 UTC
 
 name: R-CMD-check
 
@@ -17,7 +14,9 @@ env:
 
 jobs:
   R-CMD-check:
-    if: true  # TEMPORAIRE : désactivé pour ne lancer que les integration tests
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && contains(github.event.head_commit.message, '[check]'))
     runs-on: ${{ matrix.config.os }}
     name: ${{ matrix.config.os }} (R ${{ matrix.config.r }})
     env:
@@ -53,7 +52,6 @@ jobs:
   integration-tests:
     if: |
       github.event_name == 'workflow_dispatch' ||
-      github.event_name == 'schedule' ||
       (github.event_name == 'push' && contains(github.event.head_commit.message, '[integration]'))
     runs-on: ubuntu-latest
     name: Integration tests (R release)
